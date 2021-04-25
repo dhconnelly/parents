@@ -6,7 +6,7 @@ a small interpreter for a lisp-like language
 ## Why
 
 To practice TypeScript.
-
+n
 ## Usage
 
 To install dependencies, build, and link to install on your machine:
@@ -26,7 +26,6 @@ To run a script from a file with optional arguments:
 To start in interactive mode inside the project directory:
 
     npm run dev
-
 
 ## Who
 
