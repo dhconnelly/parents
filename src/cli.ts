@@ -1,10 +1,11 @@
 #!/usr/bin/env node
 
 import process from "process";
+import { foo } from "./interpreter.js";
 
 function main(args: string[]): void {
     console.log("hello, world!");
-    console.log("arguments:", args);
+    args.forEach(foo);
 }
 
-main(process.argv);
+main(process.argv.slice(2));
