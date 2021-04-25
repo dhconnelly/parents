@@ -1,7 +1,7 @@
 import fs from "fs";
-import { parse } from "./parser.js";
+import { lex } from "./lexer.js";
 export function runFile(path) {
     const prog = fs.readFileSync(path, "utf8");
-    const exprs = parse(prog);
-    console.log(exprs);
+    const toks = lex(prog);
+    console.log(toks);
 }
