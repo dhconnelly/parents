@@ -9,16 +9,12 @@ To practice TypeScript.
 
 ## Usage
 
-To start in interactive mode inside the project directory:
+To install dependencies, build, and link to install on your machine:
 
-    npm run dev
-
-To build and install, then run from anywhere:
-
+    npm install
     npm run build
     npm link
-    parents [arg ...]
-    
+
 To start in interactive mode:
 
     parents
@@ -26,6 +22,10 @@ To start in interactive mode:
 To run a script from a file with optional arguments:
 
     parents <file> [arg ...]
+
+To start in interactive mode inside the project directory:
+
+    npm run dev
 
 
 ## Who
