@@ -9,13 +9,24 @@ To practice TypeScript.
 
 ## Usage
 
+To start in interactive mode inside the project directory:
+
+    npm run dev
+
+To build and install, then run from anywhere:
+
+    npm run build
+    npm link
+    parents [arg ...]
+    
 To start in interactive mode:
 
-    npm run-script run
+    parents
 
-To run a script with optional command-line arguments:
+To run a script from a file with optional arguments:
 
-    npm run-script run script [arg ...]
+    parents <file> [arg ...]
+
 
 ## Who
 
