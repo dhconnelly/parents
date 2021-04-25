@@ -1,12 +1,11 @@
-parents
-=======
+# parents
 
 a small interpreter for a lisp-like language
 
 ## Why
 
 To practice TypeScript.
-n
+
 ## Usage
 
 To install dependencies, build, and link to install on your machine:
@@ -27,6 +26,6 @@ To start in interactive mode inside the project directory:
 
     npm run dev
 
-## Who
+## License
 
 MIT License. Copyright (c) 2021 Daniel Connelly
