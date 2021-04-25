@@ -10,7 +10,7 @@
         "build": "npx tsc && chmod +x dist/index.js"
     },
     "bin": {
-        "parents": "dist/index.js"
+        "parents": "./dist/index.js"
     },
     "repository": {
         "type": "git",
