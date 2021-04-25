@@ -4,7 +4,7 @@ a small interpreter for a lisp-like language
 
 ## Why
 
-To practice TypeScript.
+to practice typescript: "paren" + "ts" === "parents"
 
 ## Usage
 
@@ -25,6 +25,10 @@ To run a script from a file with optional arguments:
 To start in interactive mode inside the project directory:
 
     npm run dev
+
+## Who
+
+Daniel Connelly <dhconnelly@gmail.com> (https://dhconnelly.com)
 
 ## License
 
