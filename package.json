@@ -1,5 +1,5 @@
 {
-    "name": "parents",
+    "name": "@dhconnelly/parents",
     "version": "0.0.1",
     "description": "a small interpreter for a lisp-like language",
     "main": "src/index.js",
