@@ -74,7 +74,7 @@ class Lexer {
         );
     }
 
-    eat_while(regex: RegExp): LexerElement {
+    eatWhile(regex: RegExp): LexerElement {
         let tok = this.peek();
         const start = this.pos;
         let end = start;
@@ -87,7 +87,7 @@ class Lexer {
     }
 
     ident(): Token {
-        const tok = this.eat_while(IS_ALPHANUM);
+        const tok = this.eatWhile(IS_ALPHANUM);
         switch (tok.text) {
             case "if":
                 return this.emit("if", tok);
@@ -103,7 +103,7 @@ class Lexer {
     }
 
     int(): Token {
-        const tok = this.eat_while(IS_NUM);
+        const tok = this.eatWhile(IS_NUM);
         return this.emit("int", tok);
     }
 
