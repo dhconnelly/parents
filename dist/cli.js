@@ -1,8 +1,7 @@
 #!/usr/bin/env node
 import process from "process";
-import { foo } from "./interpreter.js";
+import { runFile } from "./interpreter.js";
 function main(args) {
-    console.log("hello, world!");
-    args.forEach(foo);
+    args.forEach(runFile);
 }
 main(process.argv.slice(2));
