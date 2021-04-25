@@ -1,0 +1,22 @@
+parents
+=======
+
+a small interpreter for a lisp-like language
+
+## Why
+
+To practice TypeScript.
+
+## Usage
+
+To start in interactive mode:
+
+    npm run-script run
+
+To run a script with optional command-line arguments:
+
+    npm run-script run script [arg ...]
+
+## Who
+
+MIT License. Copyright (c) 2021 Daniel Connelly
