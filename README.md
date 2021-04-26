@@ -26,10 +26,6 @@ For example, to run all the examples from the examples/ directory:
 
     parents examples/*
 
-To start in interactive mode inside the project directory:
-
-    npm run dev
-
 ## Who
 
 Daniel Connelly <dhconnelly@gmail.com> (https://dhconnelly.com)
