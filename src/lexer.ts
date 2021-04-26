@@ -1,8 +1,7 @@
-import { Expr, Token, TokenType } from "./ast.js";
+import { Option } from "./util.js";
+import { Token, TokenType } from "./ast.js";
 
-type Option<T> = T | null;
-
-class LexerError extends Error {
+export class LexerError extends Error {
     constructor(message: string) {
         super(message);
     }
@@ -134,7 +133,7 @@ class Lexer {
             }
             throw this.error(`unknown token: ${ch.text}`);
         }
-        return null;
+        return undefined;
     }
 }
 

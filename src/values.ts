@@ -10,44 +10,45 @@ export class Scope {
     }
 }
 
-export type Value = NullValue | IntValue | FunctionValue;
+export type Type =
+    | "NullType"
+    | "IntType"
+    | "BoolType"
+    | "FnType"
+    | "BuiltInFnType";
 
-export interface NullValue {
-    toString(): string;
+export type Value = NullValue | IntValue | BoolValue | FnValue | BuiltInFnValue;
+
+interface AbstractValue {
+    typ: Type;
 }
 
-export const Null: NullValue = {
-    toString(): string {
-        return "null";
-    },
-};
+export interface NullValue extends AbstractValue {
+    typ: "NullType";
+}
+export const Null: Value = { typ: "NullType" };
 
-export class IntValue {
+export interface IntValue extends AbstractValue {
+    typ: "IntType";
     value: number;
-
-    constructor(value: number) {
-        this.value = value;
-    }
-
-    toString() {
-        return this.value.toString(10);
-    }
 }
 
-export class FunctionValue {
+export interface BoolValue extends AbstractValue {
+    typ: "BoolType";
+    value: boolean;
+}
+
+export interface FnValue extends AbstractValue {
+    typ: "FnType";
     scope: Scope;
     params: string[];
     body: Expr;
     name?: string;
+}
 
-    constructor(scope: Scope, params: string[], body: Expr, name?: string) {
-        this.scope = scope;
-        this.name = name;
-        this.params = params;
-        this.body = body;
-    }
-
-    toString() {
-        return this.name ? `[function ${this.name}]` : "[anonymous function]";
-    }
+export interface BuiltInFnValue extends AbstractValue {
+    typ: "BuiltInFnType";
+    name: string;
+    arity: number;
+    impl: (args: Expr[]) => Value;
 }
