@@ -1,4 +1,4 @@
-class ParserError extends Error {
+export class ParserError extends Error {
     constructor(message) {
         super(message);
     }
@@ -162,5 +162,5 @@ export function parse(toks) {
     while (!parser.atEnd()) {
         exprs.push(parser.expr());
     }
-    return exprs;
+    return { exprs };
 }

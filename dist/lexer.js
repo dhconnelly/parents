@@ -1,4 +1,4 @@
-class LexerError extends Error {
+export class LexerError extends Error {
     constructor(message) {
         super(message);
     }
@@ -109,7 +109,7 @@ class Lexer {
             }
             throw this.error(`unknown token: ${ch.text}`);
         }
-        return null;
+        return undefined;
     }
 }
 export function lex(text) {

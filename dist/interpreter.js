@@ -1,14 +1,24 @@
-import fs from "fs";
-import { lex } from "./lexer.js";
-import { parse } from "./parser.js";
-export function runFile(path) {
+import { lex, LexerError } from "./lexer.js";
+import { parse, ParserError } from "./parser.js";
+import { evaluate, EvaluationError } from "./evaluator.js";
+export function runScript(script) {
     try {
-        const prog = fs.readFileSync(path, "utf8");
-        const toks = lex(prog);
-        const exprs = parse(toks);
-        console.log(JSON.stringify(exprs, null, 4));
+        const toks = lex(script);
+        const ast = parse(toks);
+        evaluate(ast);
     }
     catch (error) {
-        console.error(`${path}: ${error.message}`);
+        if (error instanceof LexerError) {
+            console.error(error.message);
+        }
+        else if (error instanceof ParserError) {
+            console.error(error.message);
+        }
+        else if (error instanceof EvaluationError) {
+            console.error(error.message);
+        }
+        else {
+            throw error;
+        }
     }
 }

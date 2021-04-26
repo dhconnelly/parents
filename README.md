@@ -6,6 +6,26 @@ a small interpreter for a lisp-like language
 
 to practice typescript: "paren" + "ts" === "parents"
 
+## Features
+
+The minimal set needed for implementing cons lists and the Church encoding
+using lambda caclulus. Plus console output.
+
+-   integers
+-   first-class functions with lexical scope
+-   special forms: if, lambda, define, seq
+-   built-in functions: +, -, \*, <, =, isnil, display
+
+For example, here's fibonacci:
+
+    (define fib
+      (lambda rec (n)
+        (if (< n 2)
+            n
+            (+ (rec (- n 1)) (rec (- n 2))))))
+
+See the examples/ directory for more.
+
 ## Usage
 
 To install dependencies, build, and link to install on your machine:
@@ -14,13 +34,9 @@ To install dependencies, build, and link to install on your machine:
     npm run build
     npm link
 
-To start in interactive mode:
+To run scripts defined in files:
 
-    parents
-
-To run a script from a file with optional arguments:
-
-    parents <file> [arg ...]
+    parents [file ...]
 
 For example, to run all the examples from the examples/ directory:
 
