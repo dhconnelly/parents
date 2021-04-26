@@ -50,7 +50,7 @@ class Lexer {
     error(message) {
         return new LexerError(`lexer error at ${this.line}:${this.col}: ${message}`);
     }
-    eat_while(regex) {
+    eatWhile(regex) {
         let tok = this.peek();
         const start = this.pos;
         let end = start;
@@ -62,7 +62,7 @@ class Lexer {
         return tok;
     }
     ident() {
-        const tok = this.eat_while(IS_ALPHANUM);
+        const tok = this.eatWhile(IS_ALPHANUM);
         switch (tok.text) {
             case "if":
                 return this.emit("if", tok);
@@ -77,7 +77,7 @@ class Lexer {
         }
     }
     int() {
-        const tok = this.eat_while(IS_NUM);
+        const tok = this.eatWhile(IS_NUM);
         return this.emit("int", tok);
     }
     next() {
@@ -85,7 +85,9 @@ class Lexer {
             const ch = this.peek();
             switch (ch.text) {
                 case "(":
+                    return this.emit("lparen", this.eat());
                 case ")":
+                    return this.emit("rparen", this.eat());
                 case "+":
                 case "-":
                 case "*":

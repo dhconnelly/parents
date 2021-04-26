@@ -1,4 +1,15 @@
-import { Token, Expr, IntExpr, IdentExpr, TokenType } from "./ast.js";
+import {
+    Token,
+    Expr,
+    IntExpr,
+    IdentExpr,
+    TokenType,
+    DefineExpr,
+    IfExpr,
+    LambdaExpr,
+    SeqExpr,
+    CallExpr,
+} from "./ast.js";
 
 class ParserError extends Error {
     constructor(message: string) {
@@ -27,9 +38,11 @@ class Parser {
         return this.error(`${tok.line}:${tok.col}: ${tok.text}: ${message}`);
     }
 
-    peek(): Token {
-        if (this.atEnd()) throw this.error("unexpected eof");
-        return this.toks[this.pos];
+    peek(n: number = 0): Token {
+        if (this.pos + n >= this.toks.length) {
+            throw this.error("unexpected eof");
+        }
+        return this.toks[this.pos + n];
     }
 
     eat(typ: TokenType): Token {
@@ -41,67 +54,101 @@ class Parser {
         return tok;
     }
 
-    sexpr(): Expr {
-        console.log("parsing sexpr");
+    define(): DefineExpr {
         const tok = this.eat("lparen");
-        const proto = { line: tok.line, col: tok.col };
+        this.eat("define");
+        const name = this.eat("ident").text;
+        const binding = this.expr();
+        this.eat("rparen");
+        return {
+            line: tok.line,
+            col: tok.col,
+            typ: "DefineExpr",
+            name,
+            binding,
+        };
+    }
 
-        switch (this.peek().typ) {
+    if(): IfExpr {
+        const tok = this.eat("lparen");
+        this.eat("if");
+        const cond = this.expr();
+        const cons = this.expr();
+        const alt = this.peek().typ === "rparen" ? undefined : this.expr();
+        this.eat("rparen");
+        return {
+            line: tok.line,
+            col: tok.col,
+            typ: "IfExpr",
+            cond,
+            cons,
+            alt,
+        };
+    }
+
+    lambda(): LambdaExpr {
+        const tok = this.eat("lparen");
+        this.eat("lambda");
+        const name =
+            this.peek().typ === "lparen" ? undefined : this.ident().value;
+        this.eat("lparen");
+        const params: string[] = [];
+        while (this.peek().typ !== "rparen") {
+            params.push(this.ident().value);
+        }
+        this.eat("rparen");
+        const body = this.expr();
+        this.eat("rparen");
+        return {
+            line: tok.line,
+            col: tok.col,
+            typ: "LambdaExpr",
+            name,
+            params,
+            body,
+        };
+    }
+
+    seq(): SeqExpr {
+        const tok = this.eat("lparen");
+        this.eat("seq");
+        const exprs: Expr[] = [];
+        while (this.peek().typ !== "rparen") {
+            exprs.push(this.expr());
+        }
+        this.eat("rparen");
+        return { line: tok.line, col: tok.col, typ: "SeqExpr", exprs };
+    }
+
+    call(): CallExpr {
+        const tok = this.eat("lparen");
+        const f = this.expr();
+        const args: Expr[] = [];
+        while (this.peek().typ !== "rparen") {
+            args.push(this.expr());
+        }
+        this.eat("rparen");
+        return {
+            line: tok.line,
+            col: tok.col,
+            typ: "CallExpr",
+            f,
+            args,
+        };
+    }
+
+    sexpr(): Expr {
+        switch (this.peek(1).typ) {
             case "define":
-                this.eat("define");
-                const name = this.eat("ident").text;
-                const binding = this.expr();
-                this.eat("rparen");
-                return { ...proto, typ: "DefineExpr", name, binding };
-
+                return this.define();
             case "if":
-                this.eat("if");
-                const cond = this.expr();
-                const cons = this.expr();
-                const alt =
-                    this.peek().typ === "rparen" ? undefined : this.expr();
-                this.eat("rparen");
-                return { ...proto, typ: "IfExpr", cond, cons, alt };
-
+                return this.if();
             case "lambda":
-                this.eat("lambda");
-                const lambdaName =
-                    this.peek().typ === "lparen"
-                        ? undefined
-                        : this.ident().value;
-                this.eat("lparen");
-                const params: string[] = [];
-                while (this.peek().typ !== "rparen") {
-                    params.push(this.ident().value);
-                }
-                this.eat("rparen");
-                const body = this.expr();
-                this.eat("rparen");
-                return {
-                    ...proto,
-                    typ: "LambdaExpr",
-                    name: lambdaName,
-                    params,
-                    body,
-                };
-
+                return this.lambda();
             case "seq":
-                this.eat("seq");
-                const exprs: Expr[] = [];
-                while (this.peek().typ !== "rparen") {
-                    exprs.push(this.expr());
-                }
-                this.eat("rparen");
-                return { ...proto, typ: "SeqExpr", exprs };
-
+                return this.seq();
             default:
-                const f = this.expr();
-                const args: Expr[] = [];
-                while (this.peek().typ !== "rparen") {
-                    args.push(this.expr());
-                }
-                this.eat("rparen");
-                return { ...proto, typ: "CallExpr", f, args };
+                return this.call();
         }
     }
 
