@@ -6,6 +6,7 @@ import { argv } from "process";
 import { runScript } from "./interpreter.js";
 
 export function runFile(path: string) {
+    console.log(">", path);
     let script = null;
     try {
         script = readFileSync(path, "utf8");

@@ -11,6 +11,7 @@ import {
     FnValue,
     BuiltInFnValue,
     IntValue,
+    print,
 } from "./values.js";
 
 export class EvaluationError extends Error {
@@ -69,7 +70,7 @@ class Evaluator {
     installBuiltIns() {
         this.define("nil", Null);
         this.installBuiltInFn("display", (arg: Expr) => {
-            console.log(this.evaluate(arg));
+            console.log(print(this.evaluate(arg)));
             return Null;
         });
         this.installBuiltInFn(
