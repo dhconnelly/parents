@@ -1,14 +1,15 @@
 import {
-    Token,
-    Expr,
-    IntExpr,
-    IdentExpr,
-    TokenType,
-    DefineExpr,
-    IfExpr,
-    LambdaExpr,
-    SeqExpr,
     CallExpr,
+    DefineExpr,
+    Expr,
+    IdentExpr,
+    IfExpr,
+    IntExpr,
+    LambdaExpr,
+    Prog,
+    SeqExpr,
+    Token,
+    TokenType,
 } from "./ast.js";
 
 class ParserError extends Error {
@@ -188,11 +189,11 @@ class Parser {
     }
 }
 
-export function parse(toks: Token[]): Expr[] {
+export function parse(toks: Token[]): Prog {
     const parser = new Parser(toks);
     const exprs = [];
     while (!parser.atEnd()) {
         exprs.push(parser.expr());
     }
-    return exprs;
+    return { exprs };
 }

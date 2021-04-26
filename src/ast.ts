@@ -15,6 +15,10 @@ export interface Token {
     text: string;
 }
 
+export interface Prog {
+    exprs: Expr[];
+}
+
 export type Expr =
     | IntExpr
     | IdentExpr
