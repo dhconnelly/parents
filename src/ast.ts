@@ -1,9 +1,9 @@
 export type TokenType =
     | "lparen"
     | "rparen"
-    | "if"
     | "int"
     | "ident"
+    | "if"
     | "seq"
     | "lambda"
     | "define";
@@ -15,45 +15,55 @@ export interface Token {
     text: string;
 }
 
-export interface Expr {
-    line: number;
-    col: number;
-}
+export type Expr =
+    | IntExpr
+    | IdentExpr
+    | DefineExpr
+    | IfExpr
+    | LambdaExpr
+    | CallExpr
+    | SeqExpr;
 
 export interface IntExpr {
+    typ: "IntExpr";
     line: number;
     col: number;
     value: number;
 }
 
 export interface IdentExpr {
+    typ: "IdentExpr";
     line: number;
     col: number;
     value: string;
 }
 
 export interface DefineExpr {
+    typ: "DefineExpr";
     line: number;
     col: number;
     name: string;
-    value: Expr;
+    binding: Expr;
 }
 
 export interface IfExpr {
+    typ: "IfExpr";
     line: number;
     col: number;
     cond: Expr;
-    conseq: Expr;
+    cons: Expr;
     alt?: Expr;
 }
 
 export interface SeqExpr {
+    typ: "SeqExpr";
     line: number;
     col: number;
-    body: Expr[];
+    exprs: Expr[];
 }
 
 export interface LambdaExpr {
+    typ: "LambdaExpr";
     line: number;
     col: number;
     name?: string;
@@ -62,6 +72,7 @@ export interface LambdaExpr {
 }
 
 export interface CallExpr {
+    typ: "CallExpr";
     line: number;
     col: number;
     f: Expr;

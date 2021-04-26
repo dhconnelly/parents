@@ -112,7 +112,9 @@ class Lexer {
             const ch = this.peek();
             switch (ch.text) {
                 case "(":
+                    return this.emit("lparen", this.eat());
                 case ")":
+                    return this.emit("rparen", this.eat());
                 case "+":
                 case "-":
                 case "*":

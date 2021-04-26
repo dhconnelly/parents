@@ -8,7 +8,7 @@ export function runFile(path: string) {
         const prog = fs.readFileSync(path, "utf8");
         const toks = lex(prog);
         const exprs = parse(toks);
-        console.log(toks);
+        console.log(JSON.stringify(exprs, null, 4));
     } catch (error) {
         console.error(`${path}: ${error.message}`);
     }
