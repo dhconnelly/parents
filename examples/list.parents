@@ -15,7 +15,7 @@
 
 (define printlist
   (lambda printlist (list)
-    (if (= (rest list) nil)
+    (if (isnil (rest list))
         (display (first list))
         (seq
           (display (first list))

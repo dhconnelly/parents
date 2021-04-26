@@ -113,6 +113,14 @@ class Evaluator {
                 return { typ: "IntType", value: x.value + y.value };
             }
         );
+        this.installBuiltInFn(
+            "isnil",
+            (arg): Value => {
+                const value = this.evaluate(arg);
+                const isNil = value.typ === "NullType";
+                return { typ: "BoolType", value: isNil };
+            }
+        );
     }
 
     pushScope() {
