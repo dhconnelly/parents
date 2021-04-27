@@ -4,6 +4,7 @@ export interface Prog {
 
 export type Expr =
     | IntExpr
+    | BoolExpr
     | IdentExpr
     | DefineExpr
     | IfExpr
@@ -16,6 +17,13 @@ export interface IntExpr {
     line: number;
     col: number;
     value: number;
+}
+
+export interface BoolExpr {
+    typ: "BoolExpr";
+    line: number;
+    col: number;
+    value: boolean;
 }
 
 export interface IdentExpr {

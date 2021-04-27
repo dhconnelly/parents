@@ -10,6 +10,13 @@ export function installBuiltIns(evaluator: Evaluator) {
         return Null;
     });
 
+    evaluator.installBuiltInFn("assert", (arg: Expr) => {
+        const value = evaluator.evaluateBool(arg);
+        if (!value.value)
+            console.error(`${arg.line}:${arg.col}: assertion failed`);
+        return Null;
+    });
+
     evaluator.installBuiltInFn(
         "=",
         (left: Expr, right: Expr): Value => {

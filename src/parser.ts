@@ -1,4 +1,5 @@
 import {
+    BoolExpr,
     CallExpr,
     DefineExpr,
     Expr,
@@ -163,6 +164,12 @@ class Parser {
         return { typ: "IntExpr", line: tok.line, col: tok.col, value };
     }
 
+    bool(): BoolExpr {
+        const tok = this.eat("bool");
+        const value = tok.text === "t";
+        return { typ: "BoolExpr", line: tok.line, col: tok.col, value };
+    }
+
     ident(): IdentExpr {
         const tok = this.eat("ident");
         return {
@@ -180,6 +187,8 @@ class Parser {
                 return this.sexpr();
             case "int":
                 return this.int();
+            case "bool":
+                return this.bool();
             case "ident":
                 return this.ident();
             default:

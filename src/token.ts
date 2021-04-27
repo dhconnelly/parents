@@ -2,6 +2,7 @@ export type TokenType =
     | "lparen"
     | "rparen"
     | "int"
+    | "bool"
     | "ident"
     | "if"
     | "seq"

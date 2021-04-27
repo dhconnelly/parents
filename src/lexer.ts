@@ -55,8 +55,11 @@ class Lexer {
         };
     }
 
-    eat(): LexerElement {
+    eat(want?: string): LexerElement {
         const ch = this.peek();
+        if (want && ch.text !== want) {
+            throw this.error(`want ${want}, got ${ch.text}`);
+        }
         if (ch.text === "\n") {
             this.line++;
             this.col = 1;
@@ -106,6 +109,19 @@ class Lexer {
         return this.emit("int", tok);
     }
 
+    boolean(): Token {
+        this.eat("#");
+        const ch = this.eat();
+        switch (ch.text) {
+            case "t":
+                return this.emit("bool", ch);
+            case "f":
+                return this.emit("bool", ch);
+            default:
+                throw this.error(`invalid bool value: ${ch.text}`);
+        }
+    }
+
     next(): Option<Token> {
         while (!this.atEnd()) {
             const ch = this.peek();
@@ -114,6 +130,8 @@ class Lexer {
                     return this.emit("lparen", this.eat());
                 case ")":
                     return this.emit("rparen", this.eat());
+                case "#":
+                    return this.boolean();
                 case "+":
                 case "-":
                 case "*":

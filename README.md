@@ -1,6 +1,6 @@
 # parents
 
-a small interpreter for a lisp-like language
+a small interpreter for a minimal lisp variant
 
 ## Why
 
@@ -8,21 +8,23 @@ to practice typescript: "paren" + "ts" === "parents"
 
 ## Features
 
-The minimal set needed for implementing cons lists and the Church encoding
-using lambda caclulus. Plus console output.
+The minimal set needed for implementing cons lists (see examples/list.lisp)
+and the Church encoding (see examples/church.lisp) using lambda caclulus.
+Plus console output and assertions.
 
--   integers
+-   integers and booleans (#t and #f)
 -   first-class functions with lexical scope
+-   all binding is late and all captures are by reference
 -   special forms: if, lambda, define, seq
--   built-in functions: +, -, \*, <, =, isnil, display
+-   built-in functions: +, -, \*, <, =, isnil, display, assert
 
 For example, here's fibonacci:
 
     (define fib
-      (lambda rec (n)
-        (if (< n 2)
-            n
-            (+ (rec (- n 1)) (rec (- n 2))))))
+        (lambda rec (n)
+            (if (< n 2)
+                n
+                (+ (rec (- n 1)) (rec (- n 2))))))
 
 See the examples/ directory for more.
 

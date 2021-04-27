@@ -141,6 +141,8 @@ export class Evaluator {
                 return this.define(expr.name, this.evaluate(expr.binding));
             case "IdentExpr":
                 return this.lookup(expr);
+            case "BoolExpr":
+                return { typ: "BoolType", value: expr.value };
             case "IfExpr":
                 return this.evaluateIf(expr);
             case "IntExpr":

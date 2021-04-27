@@ -5,6 +5,12 @@ export function installBuiltIns(evaluator) {
         console.log(print(evaluator.evaluate(arg)));
         return Null;
     });
+    evaluator.installBuiltInFn("assert", (arg) => {
+        const value = evaluator.evaluateBool(arg);
+        if (!value.value)
+            console.error(`${arg.line}:${arg.col}: assertion failed`);
+        return Null;
+    });
     evaluator.installBuiltInFn("=", (left, right) => {
         const x = evaluator.evaluateInt(left);
         const y = evaluator.evaluateInt(right);

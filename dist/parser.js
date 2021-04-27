@@ -133,6 +133,11 @@ class Parser {
         }
         return { typ: "IntExpr", line: tok.line, col: tok.col, value };
     }
+    bool() {
+        const tok = this.eat("bool");
+        const value = tok.text === "t";
+        return { typ: "BoolExpr", line: tok.line, col: tok.col, value };
+    }
     ident() {
         const tok = this.eat("ident");
         return {
@@ -149,6 +154,8 @@ class Parser {
                 return this.sexpr();
             case "int":
                 return this.int();
+            case "bool":
+                return this.bool();
             case "ident":
                 return this.ident();
             default:
