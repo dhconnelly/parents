@@ -8,9 +8,8 @@ import {
     LambdaExpr,
     Prog,
     SeqExpr,
-    Token,
-    TokenType,
 } from "./ast.js";
+import { Token, TokenType } from "./token.js";
 
 export class ParserError extends Error {
     constructor(message: string) {

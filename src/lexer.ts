@@ -1,5 +1,5 @@
 import { Option } from "./util.js";
-import { Token, TokenType } from "./ast.js";
+import { Token, TokenType } from "./token.js";
 
 export class LexerError extends Error {
     constructor(message: string) {

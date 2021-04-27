@@ -12,7 +12,7 @@ export function runFile(path) {
         console.error(`can't read file ${path}: ${error.message}`);
         return;
     }
-    runScript(script);
+    runScript(path, script);
 }
 function main(args) {
     args.forEach(runFile);

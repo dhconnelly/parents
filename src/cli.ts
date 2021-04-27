@@ -14,7 +14,7 @@ export function runFile(path: string) {
         console.error(`can't read file ${path}: ${error.message}`);
         return;
     }
-    runScript(script);
+    runScript(path, script);
 }
 
 function main(args: string[]): void {
