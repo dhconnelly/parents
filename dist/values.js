@@ -3,6 +3,16 @@ export class Scope {
         this.up = up;
         this.bindings = new Map();
     }
+    lookup(name) {
+        let scope = this;
+        while (scope) {
+            let value = scope.bindings.get(name);
+            if (value)
+                return value;
+            scope = scope.up;
+        }
+        return undefined;
+    }
 }
 export const Null = { typ: "NullType" };
 export function print(value) {

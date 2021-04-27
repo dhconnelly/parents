@@ -1,4 +1,5 @@
 import { Expr } from "./ast";
+import { Option } from "./util";
 
 export class Scope {
     up?: Scope;
@@ -7,6 +8,16 @@ export class Scope {
     constructor(up?: Scope) {
         this.up = up;
         this.bindings = new Map<string, Value>();
+    }
+
+    lookup(name: string): Option<Value> {
+        let scope: Option<Scope> = this;
+        while (scope) {
+            let value = scope.bindings.get(name);
+            if (value) return value;
+            scope = scope.up;
+        }
+        return undefined;
     }
 }
 

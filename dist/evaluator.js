@@ -1,5 +1,6 @@
 import { strict as assert } from "assert";
-import { Scope, Null, print, } from "./values.js";
+import { installBuiltIns } from "./builtins.js";
+import { Scope, Null, } from "./values.js";
 export class EvaluationError extends Error {
     constructor(message) {
         super(message);
@@ -14,21 +15,19 @@ function lookupError(expr) {
 function typeError(want, got, expr) {
     return new EvaluationError(`type error at ${expr.line}:${expr.col}: want ${want}, got ${got}`);
 }
-class Evaluator {
+export class Evaluator {
     constructor() {
-        this.globals = new Scope();
-        this.top = this.globals;
-        this.installBuiltIns();
+        this.top = new Scope();
     }
     lookup(expr) {
-        let scope = this.top;
-        while (scope) {
-            let value = scope.bindings.get(expr.value);
-            if (value)
-                return value;
-            scope = scope.up;
-        }
-        throw lookupError(expr);
+        let value = this.top.lookup(expr.value);
+        if (!value)
+            throw lookupError(expr);
+        return value;
+    }
+    define(name, binding) {
+        this.top.bindings.set(name, binding);
+        return Null;
     }
     installBuiltInFn(name, fn) {
         this.define(name, {
@@ -36,43 +35,6 @@ class Evaluator {
             arity: fn.length,
             name: name,
             impl: (args) => fn.apply(null, args),
-        });
-    }
-    installBuiltIns() {
-        this.define("nil", Null);
-        this.installBuiltInFn("display", (arg) => {
-            console.log(print(this.evaluate(arg)));
-            return Null;
-        });
-        this.installBuiltInFn("=", (left, right) => {
-            const x = this.evaluateInt(left);
-            const y = this.evaluateInt(right);
-            return { typ: "BoolType", value: x.value === y.value };
-        });
-        this.installBuiltInFn("-", (left, right) => {
-            const x = this.evaluateInt(left);
-            const y = this.evaluateInt(right);
-            return { typ: "IntType", value: x.value - y.value };
-        });
-        this.installBuiltInFn("*", (left, right) => {
-            const x = this.evaluateInt(left);
-            const y = this.evaluateInt(right);
-            return { typ: "IntType", value: x.value * y.value };
-        });
-        this.installBuiltInFn("<", (left, right) => {
-            const x = this.evaluateInt(left);
-            const y = this.evaluateInt(right);
-            return { typ: "BoolType", value: x.value < y.value };
-        });
-        this.installBuiltInFn("+", (left, right) => {
-            const x = this.evaluateInt(left);
-            const y = this.evaluateInt(right);
-            return { typ: "IntType", value: x.value + y.value };
-        });
-        this.installBuiltInFn("isnil", (arg) => {
-            const value = this.evaluate(arg);
-            const isNil = value.typ === "NullType";
-            return { typ: "BoolType", value: isNil };
         });
     }
     pushScope() {
@@ -128,9 +90,6 @@ class Evaluator {
         this.popScope();
         return last || Null;
     }
-    define(name, binding) {
-        this.top.bindings.set(name, binding);
-    }
     evaluateUserCall(f, expr) {
         const args = expr.args.map((expr) => this.evaluate(expr));
         if (f.params.length !== args.length) {
@@ -165,13 +124,21 @@ class Evaluator {
             return this.evaluateBuiltInCall(f, expr);
         }
     }
+    makeLambda(expr) {
+        return {
+            typ: "FnType",
+            body: expr.body,
+            params: expr.params,
+            name: expr.name,
+            scope: this.top,
+        };
+    }
     evaluate(expr) {
         switch (expr.typ) {
             case "CallExpr":
                 return this.evaluateCall(expr);
             case "DefineExpr":
-                this.define(expr.name, this.evaluate(expr.binding));
-                return Null;
+                return this.define(expr.name, this.evaluate(expr.binding));
             case "IdentExpr":
                 return this.lookup(expr);
             case "IfExpr":
@@ -179,13 +146,7 @@ class Evaluator {
             case "IntExpr":
                 return { typ: "IntType", value: expr.value };
             case "LambdaExpr":
-                return {
-                    typ: "FnType",
-                    body: expr.body,
-                    params: expr.params,
-                    name: expr.name,
-                    scope: this.top,
-                };
+                return this.makeLambda(expr);
             case "SeqExpr":
                 return this.evaluateSeq(expr);
         }
@@ -193,6 +154,7 @@ class Evaluator {
 }
 export function evaluate(ast) {
     const evaluator = new Evaluator();
+    installBuiltIns(evaluator);
     for (const expr of ast.exprs) {
         evaluator.evaluate(expr);
     }
