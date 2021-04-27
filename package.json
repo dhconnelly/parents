@@ -1,6 +1,6 @@
 {
     "name": "@dhconnelly/parents",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "description": "a small interpreter for a lisp-like language",
     "type": "module",
     "scripts": {
