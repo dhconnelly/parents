@@ -32,8 +32,7 @@ interface AbstractValue {
     readonly typ: Type;
 }
 
-export type Value = AbstractValue &
-    (NilValue | IntValue | BoolValue | FnValue | BuiltInFnValue);
+export type Value = NilValue | IntValue | BoolValue | FnValue | BuiltInFnValue;
 
 export interface NilValue extends AbstractValue {
     readonly typ: "NilType";

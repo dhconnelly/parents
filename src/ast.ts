@@ -8,17 +8,15 @@ interface AbstractExpr {
     readonly col: number;
 }
 
-export type Expr = AbstractExpr &
-    (
-        | IntExpr
-        | BoolExpr
-        | IdentExpr
-        | DefineExpr
-        | IfExpr
-        | LambdaExpr
-        | CallExpr
-        | SeqExpr
-    );
+export type Expr =
+    | IntExpr
+    | BoolExpr
+    | IdentExpr
+    | DefineExpr
+    | IfExpr
+    | LambdaExpr
+    | CallExpr
+    | SeqExpr;
 
 export interface IntExpr extends AbstractExpr {
     readonly typ: "IntExpr";
