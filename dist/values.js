@@ -14,7 +14,6 @@ export class Scope {
         return undefined;
     }
 }
-export const Null = { typ: "NullType" };
 export function print(value) {
     switch (value.typ) {
         case "BoolType":
@@ -25,7 +24,7 @@ export function print(value) {
             return value.name ? `<fn ${value.name}>` : "<anonymous fn>";
         case "IntType":
             return value.value.toString(10);
-        case "NullType":
+        case "NilType":
             return "null";
     }
 }

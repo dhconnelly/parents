@@ -7,12 +7,13 @@ class Parser {
     constructor(toks) {
         this.toks = toks;
         this.pos = 0;
+        this.line = 1;
     }
     atEnd() {
         return this.pos >= this.toks.length;
     }
     error(message) {
-        return new ParserError(`parser error: ${message}`);
+        return new ParserError(`line ${this.line}: parser error: ${message}`);
     }
     tokenError(tok, message) {
         return this.error(`${tok.line}:${tok.col}: ${tok.text}: ${message}`);
@@ -29,6 +30,7 @@ class Parser {
             throw this.tokenError(tok, `want ${typ}, got ${tok.typ}`);
         }
         this.pos++;
+        this.line = tok.line;
         return tok;
     }
     define() {

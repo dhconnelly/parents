@@ -1,6 +1,6 @@
 import { strict as assert } from "assert";
 import { installBuiltIns } from "./builtins.js";
-import { Scope, Null, } from "./values.js";
+import { Scope, } from "./values.js";
 export class EvaluationError extends Error {
     constructor(message) {
         super(message);
@@ -18,6 +18,7 @@ function typeError(want, got, expr) {
 export class Evaluator {
     constructor() {
         this.top = new Scope();
+        this.nil = { typ: "NilType" };
     }
     lookup(expr) {
         let value = this.top.lookup(expr.value);
@@ -27,7 +28,7 @@ export class Evaluator {
     }
     define(name, binding) {
         this.top.bindings.set(name, binding);
-        return Null;
+        return this.nil;
     }
     installBuiltInFn(name, fn) {
         this.define(name, {
@@ -76,7 +77,7 @@ export class Evaluator {
             value = this.evaluate(expr.alt);
         }
         else {
-            value = Null;
+            value = this.nil;
         }
         this.popScope();
         return value;
@@ -88,7 +89,7 @@ export class Evaluator {
             last = this.evaluate(e);
         }
         this.popScope();
-        return last || Null;
+        return last || this.nil;
     }
     evaluateUserCall(f, expr) {
         const args = expr.args.map((expr) => this.evaluate(expr));
