@@ -1,20 +1,20 @@
 import { Expr } from "./ast.js";
-import { Value, Null, print } from "./values.js";
+import { Value, print } from "./values.js";
 import { Evaluator } from "./evaluator";
 
 export function installBuiltIns(evaluator: Evaluator) {
-    evaluator.define("nil", Null);
+    evaluator.define("nil", evaluator.nil);
 
     evaluator.installBuiltInFn("display", (arg: Expr) => {
         console.log(print(evaluator.evaluate(arg)));
-        return Null;
+        return evaluator.nil;
     });
 
     evaluator.installBuiltInFn("assert", (arg: Expr) => {
         const value = evaluator.evaluateBool(arg);
         if (!value.value)
             console.error(`${arg.line}:${arg.col}: assertion failed`);
-        return Null;
+        return evaluator.nil;
     });
 
     evaluator.installBuiltInFn(
@@ -66,7 +66,7 @@ export function installBuiltIns(evaluator: Evaluator) {
         "isnil",
         (arg): Value => {
             const value = evaluator.evaluate(arg);
-            const isNil = value.typ === "NullType";
+            const isNil = value.typ === "NilType";
             return { typ: "BoolType", value: isNil };
         }
     );

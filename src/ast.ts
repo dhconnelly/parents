@@ -1,75 +1,67 @@
 export interface Prog {
-    exprs: Expr[];
+    readonly exprs: Expr[];
 }
 
-export type Expr =
-    | IntExpr
-    | BoolExpr
-    | IdentExpr
-    | DefineExpr
-    | IfExpr
-    | LambdaExpr
-    | CallExpr
-    | SeqExpr;
-
-export interface IntExpr {
-    typ: "IntExpr";
-    line: number;
-    col: number;
-    value: number;
+interface AbstractExpr {
+    readonly typ: string;
+    readonly line: number;
+    readonly col: number;
 }
 
-export interface BoolExpr {
-    typ: "BoolExpr";
-    line: number;
-    col: number;
-    value: boolean;
+export type Expr = AbstractExpr &
+    (
+        | IntExpr
+        | BoolExpr
+        | IdentExpr
+        | DefineExpr
+        | IfExpr
+        | LambdaExpr
+        | CallExpr
+        | SeqExpr
+    );
+
+export interface IntExpr extends AbstractExpr {
+    readonly typ: "IntExpr";
+    readonly value: number;
 }
 
-export interface IdentExpr {
-    typ: "IdentExpr";
-    line: number;
-    col: number;
-    value: string;
+export interface BoolExpr extends AbstractExpr {
+    readonly typ: "BoolExpr";
+    readonly value: boolean;
 }
 
-export interface DefineExpr {
-    typ: "DefineExpr";
-    line: number;
-    col: number;
-    name: string;
-    binding: Expr;
+export interface IdentExpr extends AbstractExpr {
+    readonly typ: "IdentExpr";
+    readonly value: string;
 }
 
-export interface IfExpr {
-    typ: "IfExpr";
-    line: number;
-    col: number;
-    cond: Expr;
-    cons: Expr;
-    alt?: Expr;
+export interface DefineExpr extends AbstractExpr {
+    readonly typ: "DefineExpr";
+    readonly name: string;
+    readonly binding: Expr;
 }
 
-export interface SeqExpr {
-    typ: "SeqExpr";
-    line: number;
-    col: number;
-    exprs: Expr[];
+export interface IfExpr extends AbstractExpr {
+    readonly typ: "IfExpr";
+    readonly cond: Expr;
+    readonly cons: Expr;
+    readonly alt?: Expr;
 }
 
-export interface LambdaExpr {
-    typ: "LambdaExpr";
-    line: number;
-    col: number;
-    name?: string;
-    params: string[];
-    body: Expr;
+export interface SeqExpr extends AbstractExpr {
+    readonly typ: "SeqExpr";
+    readonly exprs: Expr[];
 }
 
-export interface CallExpr {
-    typ: "CallExpr";
-    line: number;
-    col: number;
-    f: Expr;
-    args: Expr[];
+export interface LambdaExpr extends AbstractExpr {
+    readonly typ: "LambdaExpr";
+    readonly name?: string;
+    readonly params: string[];
+    readonly body: Expr;
+}
+
+export interface CallExpr extends AbstractExpr {
+    readonly typ: "CallExpr";
+    readonly f: Expr;
+    readonly args: Expr[];
 }

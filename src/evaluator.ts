@@ -13,12 +13,12 @@ import { installBuiltIns } from "./builtins.js";
 import {
     Value,
     Scope,
-    Null,
     Type,
     BoolValue,
     FnValue,
     BuiltInFnValue,
     IntValue,
+    NilValue,
 } from "./values.js";
 
 export class EvaluationError extends Error {
@@ -47,9 +47,11 @@ function typeError(want: string, got: Type, expr: Expr): EvaluationError {
 
 export class Evaluator {
     top: Scope;
+    nil: NilValue;
 
     constructor() {
         this.top = new Scope();
+        this.nil = { typ: "NilType" };
     }
 
     lookup(expr: IdentExpr): Value {
@@ -60,7 +62,7 @@ export class Evaluator {
 
     define(name: string, binding: Value): Value {
         this.top.bindings.set(name, binding);
-        return Null;
+        return this.nil;
     }
 
     installBuiltInFn(name: string, fn: (...args: Expr[]) => Value) {
@@ -114,7 +116,7 @@ export class Evaluator {
         } else if (expr.alt) {
             value = this.evaluate(expr.alt);
         } else {
-            value = Null;
+            value = this.nil;
         }
         this.popScope();
         return value;
@@ -127,7 +129,7 @@ export class Evaluator {
             last = this.evaluate(e);
         }
         this.popScope();
-        return last || Null;
+        return last || this.nil;
     }
 
     evaluateUserCall(f: FnValue, expr: CallExpr): Value {

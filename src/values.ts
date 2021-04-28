@@ -22,46 +22,46 @@ export class Scope {
 }
 
 export type Type =
-    | "NullType"
+    | "NilType"
     | "IntType"
     | "BoolType"
     | "FnType"
     | "BuiltInFnType";
 
-export type Value = NullValue | IntValue | BoolValue | FnValue | BuiltInFnValue;
-
 interface AbstractValue {
-    typ: Type;
+    readonly typ: Type;
 }
 
-export interface NullValue extends AbstractValue {
-    typ: "NullType";
+export type Value = AbstractValue &
+    (NilValue | IntValue | BoolValue | FnValue | BuiltInFnValue);
+
+export interface NilValue extends AbstractValue {
+    readonly typ: "NilType";
 }
-export const Null: Value = { typ: "NullType" };
 
 export interface IntValue extends AbstractValue {
-    typ: "IntType";
-    value: number;
+    readonly typ: "IntType";
+    readonly value: number;
 }
 
 export interface BoolValue extends AbstractValue {
-    typ: "BoolType";
-    value: boolean;
+    readonly typ: "BoolType";
+    readonly value: boolean;
 }
 
 export interface FnValue extends AbstractValue {
-    typ: "FnType";
-    scope: Scope;
-    params: string[];
-    body: Expr;
-    name?: string;
+    readonly typ: "FnType";
+    readonly scope: Scope;
+    readonly params: string[];
+    readonly body: Expr;
+    readonly name?: string;
 }
 
 export interface BuiltInFnValue extends AbstractValue {
-    typ: "BuiltInFnType";
-    name: string;
-    arity: number;
-    impl: (args: Expr[]) => Value;
+    readonly typ: "BuiltInFnType";
+    readonly name: string;
+    readonly arity: number;
+    readonly impl: (args: Expr[]) => Value;
 }
 
 export function print(value: Value): string {
@@ -74,7 +74,7 @@ export function print(value: Value): string {
             return value.name ? `<fn ${value.name}>` : "<anonymous fn>";
         case "IntType":
             return value.value.toString(10);
-        case "NullType":
+        case "NilType":
             return "null";
     }
 }
