@@ -1,4 +1,4 @@
-import { Expr } from "./ast.js";
+import { Expr, printExpr } from "./ast.js";
 import { Value, print } from "./values.js";
 import { Evaluator } from "./evaluator";
 
@@ -12,8 +12,10 @@ export function installBuiltIns(evaluator: Evaluator) {
 
     evaluator.installBuiltInFn("assert", (arg: Expr) => {
         const value = evaluator.evaluateBool(arg);
-        if (!value.value)
-            console.error(`${arg.line}:${arg.col}: assertion failed`);
+        if (!value.value) {
+            const s = printExpr(arg);
+            console.error(`${arg.line}:${arg.col}: assertion failed: ${s}`);
+        }
         return evaluator.nil;
     });
 

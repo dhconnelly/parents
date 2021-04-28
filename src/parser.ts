@@ -21,10 +21,12 @@ export class ParserError extends Error {
 class Parser {
     toks: Token[];
     pos: number;
+    line: number;
 
     constructor(toks: Token[]) {
         this.toks = toks;
         this.pos = 0;
+        this.line = 1;
     }
 
     atEnd(): boolean {
@@ -32,7 +34,7 @@ class Parser {
     }
 
     error(message: string): ParserError {
-        return new ParserError(`parser error: ${message}`);
+        return new ParserError(`line ${this.line}: parser error: ${message}`);
     }
 
     tokenError(tok: Token, message: string): ParserError {
@@ -52,6 +54,7 @@ class Parser {
             throw this.tokenError(tok, `want ${typ}, got ${tok.typ}`);
         }
         this.pos++;
+        this.line = tok.line;
         return tok;
     }
 
