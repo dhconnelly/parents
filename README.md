@@ -30,7 +30,7 @@ See the examples/ directory for more.
 
 ## Usage
 
-To install dependencies, build, and link to install on your machine:
+To install dependencies, build, and link on your machine:
 
     npm install
     npm run build
