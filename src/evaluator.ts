@@ -28,6 +28,12 @@ export class EvaluationError extends Error {
     }
 }
 
+function defineAtRootError(expr: Expr): EvaluationError {
+    return new EvaluationError(
+        `${expr.line}:${expr.col}: define only allowed at root scope`
+    );
+}
+
 function arityError(want: number, got: number, expr: Expr): EvaluationError {
     return new EvaluationError(
         `${expr.line}:${expr.col}: fn expected ${want} args, got ${got}`
@@ -48,10 +54,12 @@ function typeError(want: string, got: Type, expr: Expr): EvaluationError {
 
 export class Evaluator {
     top: Scope;
+    global: Scope;
     nil: NilValue;
 
     constructor() {
-        this.top = new Scope();
+        this.global = new Scope();
+        this.top = this.global;
         this.nil = { typ: "NilType" };
     }
 
@@ -192,6 +200,9 @@ export class Evaluator {
             case "CallExpr":
                 return this.evaluateCall(expr);
             case "DefineExpr":
+                if (this.top !== this.global) {
+                    throw defineAtRootError(expr);
+                }
                 return this.define(expr.name, this.evaluate(expr.binding));
             case "LetExpr":
                 return this.evaluateLet(expr);
