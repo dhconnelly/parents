@@ -36,8 +36,30 @@ class Parser {
     define() {
         const tok = this.eat("lparen");
         this.eat("define");
-        const name = this.eat("ident").text;
-        const binding = this.expr();
+        let name = null;
+        let binding = undefined;
+        if (this.peek().typ === "lparen") {
+            this.eat("lparen");
+            name = this.eat("ident").text;
+            const params = [];
+            while (this.peek().typ !== "rparen") {
+                params.push(this.ident().value);
+            }
+            this.eat("rparen");
+            const body = this.expr();
+            binding = {
+                line: tok.line,
+                col: tok.col,
+                typ: "LambdaExpr",
+                name,
+                params,
+                body,
+            };
+        }
+        else {
+            name = this.eat("ident").text;
+            binding = this.expr();
+        }
         this.eat("rparen");
         return {
             line: tok.line,
@@ -45,6 +67,24 @@ class Parser {
             typ: "DefineExpr",
             name,
             binding,
+        };
+    }
+    let() {
+        const tok = this.eat("lparen");
+        this.eat("let");
+        this.eat("lparen");
+        const name = this.eat("ident").text;
+        const binding = this.expr();
+        this.eat("rparen");
+        const body = this.expr();
+        this.eat("rparen");
+        return {
+            line: tok.line,
+            col: tok.col,
+            typ: "LetExpr",
+            name,
+            binding,
+            body,
         };
     }
     if() {
@@ -120,6 +160,8 @@ class Parser {
                 return this.lambda();
             case "seq":
                 return this.seq();
+            case "let":
+                return this.let();
             default:
                 return this.call();
         }

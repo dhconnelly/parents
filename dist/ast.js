@@ -8,6 +8,8 @@ export function printExpr(expr) {
             return `(${f} ${args})`;
         case "DefineExpr":
             return `(define ${expr.name} ${printExpr(expr.binding)})`;
+        case "LetExpr":
+            return `(let (${expr.name} ${expr.binding}) ${expr.body})`;
         case "IdentExpr":
             return expr.value;
         case "IfExpr":

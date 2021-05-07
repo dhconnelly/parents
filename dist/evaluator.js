@@ -6,6 +6,9 @@ export class EvaluationError extends Error {
         super(message);
     }
 }
+function defineAtRootError(expr) {
+    return new EvaluationError(`${expr.line}:${expr.col}: define only allowed at root scope`);
+}
 function arityError(want, got, expr) {
     return new EvaluationError(`${expr.line}:${expr.col}: fn expected ${want} args, got ${got}`);
 }
@@ -17,17 +20,18 @@ function typeError(want, got, expr) {
 }
 export class Evaluator {
     constructor() {
-        this.top = new Scope();
+        this.global = new Scope();
+        this.top = this.global;
         this.nil = { typ: "NilType" };
     }
     lookup(expr) {
-        let value = this.top.lookup(expr.value);
+        let value = this.top.lookup(expr.value) || this.global.lookup(expr.value);
         if (!value)
             throw lookupError(expr);
         return value;
     }
     define(name, binding) {
-        this.top.bindings.set(name, binding);
+        this.top.define(name, binding);
         return this.nil;
     }
     installBuiltInFn(name, fn) {
@@ -91,6 +95,13 @@ export class Evaluator {
         this.popScope();
         return last || this.nil;
     }
+    evaluateLet(expr) {
+        this.pushScope();
+        this.define(expr.name, this.evaluate(expr.binding));
+        const val = this.evaluate(expr.body);
+        this.popScope();
+        return val;
+    }
     evaluateUserCall(f, expr) {
         const args = expr.args.map((expr) => this.evaluate(expr));
         if (f.params.length !== args.length) {
@@ -100,10 +111,10 @@ export class Evaluator {
         this.top = f.scope;
         this.pushScope();
         if (f.name) {
-            this.top.bindings.set(f.name, f);
+            this.top.define(f.name, f);
         }
         for (let i = 0; i < f.params.length; i++) {
-            this.top.bindings.set(f.params[i], args[i]);
+            this.top.define(f.params[i], args[i]);
         }
         const value = this.evaluate(f.body);
         this.popScope();
@@ -131,7 +142,7 @@ export class Evaluator {
             body: expr.body,
             params: expr.params,
             name: expr.name,
-            scope: this.top,
+            scope: this.top.snapshot(),
         };
     }
     evaluate(expr) {
@@ -139,7 +150,12 @@ export class Evaluator {
             case "CallExpr":
                 return this.evaluateCall(expr);
             case "DefineExpr":
+                if (this.top !== this.global) {
+                    throw defineAtRootError(expr);
+                }
                 return this.define(expr.name, this.evaluate(expr.binding));
+            case "LetExpr":
+                return this.evaluateLet(expr);
             case "IdentExpr":
                 return this.lookup(expr);
             case "BoolExpr":
