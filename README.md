@@ -14,17 +14,16 @@ Plus console output and assertions.
 
 -   integers and booleans (#t and #f)
 -   first-class functions with lexical scope
--   all binding is late and all captures are by reference
--   special forms: if, lambda, define, seq
+-   closures capture current environment by value (except globals)
+-   special forms: if, lambda, define (at root scope only), seq, let
 -   built-in functions: +, -, \*, <, =, isnil, display, assert
 
 For example, here's fibonacci:
 
-    (define fib
-        (lambda rec (n)
-            (if (< n 2)
-                n
-                (+ (rec (- n 1)) (rec (- n 2))))))
+    (define (fib n)
+        (if (< n 2)
+            n
+            (+ (rec (- n 1)) (rec (- n 2)))))
 
 See the examples/ directory for more.
 
