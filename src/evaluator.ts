@@ -64,13 +64,14 @@ export class Evaluator {
     }
 
     lookup(expr: IdentExpr): Value {
-        let value = this.top.lookup(expr.value);
+        let value =
+            this.top.lookup(expr.value) || this.global.lookup(expr.value);
         if (!value) throw lookupError(expr);
         return value;
     }
 
     define(name: string, binding: Value): Value {
-        this.top.bindings.set(name, binding);
+        this.top.define(name, binding);
         return this.nil;
     }
 
@@ -158,10 +159,10 @@ export class Evaluator {
         this.top = f.scope;
         this.pushScope();
         if (f.name) {
-            this.top.bindings.set(f.name, f);
+            this.top.define(f.name, f);
         }
         for (let i = 0; i < f.params.length; i++) {
-            this.top.bindings.set(f.params[i], args[i]);
+            this.top.define(f.params[i], args[i]);
         }
         const value = this.evaluate(f.body);
         this.popScope();
@@ -191,7 +192,7 @@ export class Evaluator {
             body: expr.body,
             params: expr.params,
             name: expr.name,
-            scope: this.top,
+            scope: this.top.snapshot(),
         };
     }
 
