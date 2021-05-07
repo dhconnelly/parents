@@ -1,5 +1,5 @@
-import { lex, LexerError } from "./lexer.js";
-import { parse, ParserError } from "./parser.js";
+import { lex, LexerError } from "../lexer.js";
+import { parse, ParserError } from "../parser.js";
 import { evaluate, EvaluationError } from "./evaluator.js";
 
 export function runScript(name: string, script: string) {

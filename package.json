@@ -5,11 +5,11 @@
     "type": "module",
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1",
-        "dev": "node --loader ts-node/esm ./src/cli.ts",
-        "build": "rm -r dist && npx tsc && chmod +x dist/cli.js"
+        "dev": "node --loader ts-node/esm ./src/bin/cli.ts",
+        "build": "rm -r dist && npx tsc && chmod +x dist/bin/cli.js"
     },
     "bin": {
-        "parents": "./dist/cli.js"
+        "parents": "./dist/bin/cli.js"
     },
     "repository": {
         "type": "git",

@@ -1,4 +1,4 @@
-import { Option } from "./util.js";
+import { Option } from "./types.js";
 import { Token, TokenType } from "./token.js";
 
 export class LexerError extends Error {

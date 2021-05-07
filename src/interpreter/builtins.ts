@@ -1,4 +1,4 @@
-import { Expr, printExpr } from "./ast.js";
+import { Expr, printExpr } from "../ast.js";
 import { Value, print } from "./values.js";
 import { Evaluator } from "./evaluator";
 

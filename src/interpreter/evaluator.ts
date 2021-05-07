@@ -9,7 +9,7 @@ import {
     SeqExpr,
     CallExpr,
     LambdaExpr,
-} from "./ast.js";
+} from "../ast.js";
 import { installBuiltIns } from "./builtins.js";
 import {
     Value,

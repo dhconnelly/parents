@@ -12,7 +12,7 @@ import {
     SeqExpr,
 } from "./ast.js";
 import { Token, TokenType } from "./token.js";
-import { Option } from "./util.js";
+import { Option } from "./types.js";
 
 export class ParserError extends Error {
     constructor(message: string) {

@@ -1,4 +1,4 @@
-import { printExpr } from "./ast.js";
+import { printExpr } from "../ast.js";
 import { print } from "./values.js";
 export function installBuiltIns(evaluator) {
     evaluator.define("nil", evaluator.nil);

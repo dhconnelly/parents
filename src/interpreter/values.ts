@@ -1,5 +1,5 @@
-import { Expr } from "./ast";
-import { Option } from "./util";
+import { Expr } from "../ast";
+import { Option } from "../types";
 
 export class Scope {
     up?: Scope;
