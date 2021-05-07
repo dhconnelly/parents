@@ -7,7 +7,8 @@ export type TokenType =
     | "if"
     | "seq"
     | "lambda"
-    | "define";
+    | "define"
+    | "let";
 
 export interface Token {
     typ: TokenType;

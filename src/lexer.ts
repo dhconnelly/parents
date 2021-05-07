@@ -99,6 +99,8 @@ class Lexer {
                 return this.emit("lambda", tok);
             case "seq":
                 return this.emit("seq", tok);
+            case "let":
+                return this.emit("let", tok);
             default:
                 return this.emit("ident", tok);
         }

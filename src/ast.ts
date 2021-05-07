@@ -16,7 +16,8 @@ export type Expr =
     | IfExpr
     | LambdaExpr
     | CallExpr
-    | SeqExpr;
+    | SeqExpr
+    | LetExpr;
 
 export interface IntExpr extends AbstractExpr {
     readonly typ: "IntExpr";
@@ -37,6 +38,13 @@ export interface DefineExpr extends AbstractExpr {
     readonly typ: "DefineExpr";
     readonly name: string;
     readonly binding: Expr;
+}
+
+export interface LetExpr extends AbstractExpr {
+    readonly typ: "LetExpr";
+    readonly name: string;
+    readonly binding: Expr;
+    readonly body: Expr;
 }
 
 export interface IfExpr extends AbstractExpr {
@@ -74,6 +82,8 @@ export function printExpr(expr: Expr): string {
             return `(${f} ${args})`;
         case "DefineExpr":
             return `(define ${expr.name} ${printExpr(expr.binding)})`;
+        case "LetExpr":
+            return `(let (${expr.name} ${expr.binding}) ${expr.body})`;
         case "IdentExpr":
             return expr.value;
         case "IfExpr":
