@@ -12,6 +12,7 @@ import {
     SeqExpr,
 } from "./ast.js";
 import { Token, TokenType } from "./token.js";
+import { Option } from "./util.js";
 
 export class ParserError extends Error {
     constructor(message: string) {
@@ -62,8 +63,29 @@ class Parser {
     define(): DefineExpr {
         const tok = this.eat("lparen");
         this.eat("define");
-        const name = this.eat("ident").text;
-        const binding = this.expr();
+        let name = null;
+        let binding: Option<Expr> = undefined;
+        if (this.peek().typ === "lparen") {
+            this.eat("lparen");
+            name = this.eat("ident").text;
+            const params: string[] = [];
+            while (this.peek().typ !== "rparen") {
+                params.push(this.ident().value);
+            }
+            this.eat("rparen");
+            const body = this.expr();
+            binding = {
+                line: tok.line,
+                col: tok.col,
+                typ: "LambdaExpr",
+                name,
+                params,
+                body,
+            };
+        } else {
+            name = this.eat("ident").text;
+            binding = this.expr();
+        }
         this.eat("rparen");
         return {
             line: tok.line,
