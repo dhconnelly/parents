@@ -1,8 +1,12 @@
-export class LexerError extends Error {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.lex = exports.LexerError = void 0;
+class LexerError extends Error {
     constructor(message) {
         super(message);
     }
 }
+exports.LexerError = LexerError;
 const IS_ALPHA = /[a-zA-Z]/;
 const IS_ALPHANUM = /[a-zA-Z0-9]/;
 const IS_NUM = /[0-9]/;
@@ -57,7 +61,7 @@ class Lexer {
         let tok = this.peek();
         const start = this.pos;
         let end = start;
-        while (regex.test(this.peek().text)) {
+        while (!this.atEnd() && regex.test(this.peek().text)) {
             this.eat();
             end++;
         }
@@ -131,7 +135,7 @@ class Lexer {
         return undefined;
     }
 }
-export function lex(text) {
+function lex(text) {
     const lexer = new Lexer(text);
     const toks = [];
     while (!lexer.atEnd()) {
@@ -141,3 +145,4 @@ export function lex(text) {
     }
     return toks;
 }
+exports.lex = lex;

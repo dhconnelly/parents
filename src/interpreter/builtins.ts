@@ -1,5 +1,5 @@
-import { Expr, printExpr } from "../ast.js";
-import { Value, print } from "./values.js";
+import { Expr, printExpr } from "../ast";
+import { Value, print } from "../values";
 import { Evaluator } from "./evaluator";
 
 export function installBuiltIns(evaluator: Evaluator) {

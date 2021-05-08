@@ -9,18 +9,18 @@ import {
     SeqExpr,
     CallExpr,
     LambdaExpr,
-} from "../ast.js";
-import { installBuiltIns } from "./builtins.js";
+} from "../ast";
+import { installBuiltIns } from "./builtins";
 import {
     Value,
-    Scope,
     Type,
     BoolValue,
     FnValue,
     BuiltInFnValue,
     IntValue,
     NilValue,
-} from "./values.js";
+} from "../values";
+import { Scope } from "./scope";
 
 export class EvaluationError extends Error {
     constructor(message: string) {

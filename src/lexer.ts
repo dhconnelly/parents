@@ -1,5 +1,5 @@
-import { Option } from "./types.js";
-import { Token, TokenType } from "./token.js";
+import { Option } from "./util";
+import { Token, TokenType } from "./token";
 
 export class LexerError extends Error {
     constructor(message: string) {
@@ -80,7 +80,7 @@ class Lexer {
         let tok = this.peek();
         const start = this.pos;
         let end = start;
-        while (regex.test(this.peek().text)) {
+        while (!this.atEnd() && regex.test(this.peek().text)) {
             this.eat();
             end++;
         }

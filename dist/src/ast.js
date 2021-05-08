@@ -1,4 +1,7 @@
-export function printExpr(expr) {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.printExpr = void 0;
+function printExpr(expr) {
     switch (expr.typ) {
         case "BoolExpr":
             return expr.value ? "#t" : "#f";
@@ -30,3 +33,4 @@ export function printExpr(expr) {
             return `(seq ${expr.exprs.map(printExpr).join(" ")})`;
     }
 }
+exports.printExpr = printExpr;

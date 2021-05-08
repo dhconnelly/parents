@@ -1,15 +1,18 @@
-import { printExpr } from "../ast.js";
-import { print } from "./values.js";
-export function installBuiltIns(evaluator) {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.installBuiltIns = void 0;
+const ast_1 = require("../ast");
+const values_1 = require("../values");
+function installBuiltIns(evaluator) {
     evaluator.define("nil", evaluator.nil);
     evaluator.installBuiltInFn("display", (arg) => {
-        console.log(print(evaluator.evaluate(arg)));
+        console.log(values_1.print(evaluator.evaluate(arg)));
         return evaluator.nil;
     });
     evaluator.installBuiltInFn("assert", (arg) => {
         const value = evaluator.evaluateBool(arg);
         if (!value.value) {
-            const s = printExpr(arg);
+            const s = ast_1.printExpr(arg);
             console.error(`${arg.line}:${arg.col}: assertion failed: ${s}`);
         }
         return evaluator.nil;
@@ -45,3 +48,4 @@ export function installBuiltIns(evaluator) {
         return { typ: "BoolType", value: isNil };
     });
 }
+exports.installBuiltIns = installBuiltIns;

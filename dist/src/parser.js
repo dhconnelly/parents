@@ -1,8 +1,13 @@
-export class ParserError extends Error {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.parse = exports.ParserError = void 0;
+const lexer_1 = require("./lexer");
+class ParserError extends Error {
     constructor(message) {
         super(message);
     }
 }
+exports.ParserError = ParserError;
 class Parser {
     constructor(toks) {
         this.toks = toks;
@@ -207,7 +212,8 @@ class Parser {
         }
     }
 }
-export function parse(toks) {
+function parse(text) {
+    const toks = lexer_1.lex(text);
     const parser = new Parser(toks);
     const exprs = [];
     while (!parser.atEnd()) {
@@ -215,3 +221,4 @@ export function parse(toks) {
     }
     return { exprs };
 }
+exports.parse = parse;

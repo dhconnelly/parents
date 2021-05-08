@@ -1,11 +1,15 @@
-import { strict as assert } from "assert";
-import { installBuiltIns } from "./builtins.js";
-import { Scope, } from "./values.js";
-export class EvaluationError extends Error {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.evaluate = exports.Evaluator = exports.EvaluationError = void 0;
+const assert_1 = require("assert");
+const builtins_1 = require("./builtins");
+const scope_1 = require("./scope");
+class EvaluationError extends Error {
     constructor(message) {
         super(message);
     }
 }
+exports.EvaluationError = EvaluationError;
 function defineAtRootError(expr) {
     return new EvaluationError(`${expr.line}:${expr.col}: define only allowed at root scope`);
 }
@@ -18,9 +22,9 @@ function lookupError(expr) {
 function typeError(want, got, expr) {
     return new EvaluationError(`type error at ${expr.line}:${expr.col}: want ${want}, got ${got}`);
 }
-export class Evaluator {
+class Evaluator {
     constructor() {
-        this.global = new Scope();
+        this.global = new scope_1.Scope();
         this.top = this.global;
         this.nil = { typ: "NilType" };
     }
@@ -43,11 +47,11 @@ export class Evaluator {
         });
     }
     pushScope() {
-        const top = new Scope(this.top);
+        const top = new scope_1.Scope(this.top);
         this.top = top;
     }
     popScope() {
-        assert.ok(this.top.up);
+        assert_1.strict.ok(this.top.up);
         this.top = this.top.up;
     }
     evaluateBool(expr) {
@@ -171,10 +175,12 @@ export class Evaluator {
         }
     }
 }
-export function evaluate(ast) {
+exports.Evaluator = Evaluator;
+function evaluate(ast) {
     const evaluator = new Evaluator();
-    installBuiltIns(evaluator);
+    builtins_1.installBuiltIns(evaluator);
     for (const expr of ast.exprs) {
         evaluator.evaluate(expr);
     }
 }
+exports.evaluate = evaluate;

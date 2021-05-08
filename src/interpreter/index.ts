@@ -1,11 +1,10 @@
-import { lex, LexerError } from "../lexer.js";
-import { parse, ParserError } from "../parser.js";
-import { evaluate, EvaluationError } from "./evaluator.js";
+import { LexerError } from "../lexer";
+import { parse, ParserError } from "../parser";
+import { evaluate, EvaluationError } from "./evaluator";
 
 export function runScript(name: string, script: string) {
     try {
-        const toks = lex(script);
-        const ast = parse(toks);
+        const ast = parse(script);
         evaluate(ast);
     } catch (error) {
         if (

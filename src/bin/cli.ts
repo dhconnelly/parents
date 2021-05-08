@@ -3,7 +3,7 @@
 import { readFileSync } from "fs";
 import { argv } from "process";
 
-import { runScript } from "../interpreter/index.js";
+import { runScript } from "../interpreter/index";
 
 export function runFile(path: string) {
     console.log(">", path);

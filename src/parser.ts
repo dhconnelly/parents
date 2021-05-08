@@ -10,9 +10,10 @@ import {
     LetExpr,
     Prog,
     SeqExpr,
-} from "./ast.js";
-import { Token, TokenType } from "./token.js";
-import { Option } from "./types.js";
+} from "./ast";
+import { lex } from "./lexer";
+import { Token, TokenType } from "./token";
+import { Option } from "./util";
 
 export class ParserError extends Error {
     constructor(message: string) {
@@ -244,7 +245,8 @@ class Parser {
     }
 }
 
-export function parse(toks: Token[]): Prog {
+export function parse(text: string): Prog {
+    const toks = lex(text);
     const parser = new Parser(toks);
     const exprs = [];
     while (!parser.atEnd()) {

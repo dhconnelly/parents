@@ -2,14 +2,14 @@
     "name": "@dhconnelly/parents",
     "version": "1.2.0",
     "description": "a small interpreter for a lisp-like language",
-    "type": "module",
     "scripts": {
-        "test": "echo \"Error: no test specified\" && exit 1",
+        "test": "mocha -r ts-node/register test/test_*.ts",
         "dev": "node --loader ts-node/esm ./src/bin/cli.ts",
-        "build": "rm -r dist && npx tsc && chmod +x dist/bin/cli.js"
+        "build": "rm -rf dist && npx tsc && chmod +x dist/src/bin/cli.js",
+        "clean": "rm -rf dist"
     },
     "bin": {
-        "parents": "./dist/bin/cli.js"
+        "parents": "./dist/src/bin/cli.js"
     },
     "repository": {
         "type": "git",
@@ -27,7 +27,9 @@
     },
     "homepage": "https://github.com/dhconnelly/parents#readme",
     "devDependencies": {
+        "@types/mocha": "^8.2.2",
         "@types/node": "^14.14.41",
+        "mocha": "^8.4.0",
         "ts-node": "^9.1.1",
         "typescript": "^4.2.4"
     }

@@ -1,6 +1,8 @@
-enum Opcode {
-    PushInt = 1,
-    PushBool,
+import { Value } from "./values";
+
+export enum Opcode {
+    Pop = 1,
+    Push,
     Add,
     Sub,
     Lt,
@@ -8,3 +10,8 @@ enum Opcode {
     Display,
     Assert,
 }
+
+export type Instr = {
+    op: Opcode;
+    value?: Value;
+};
