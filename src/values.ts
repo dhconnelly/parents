@@ -1,12 +1,13 @@
 import { Expr } from "./ast";
 import { Scope } from "./interpreter/scope";
 
-export type Type =
-    | "NilType"
-    | "IntType"
-    | "BoolType"
-    | "FnType"
-    | "BuiltInFnType";
+export enum Type {
+    NilType,
+    IntType,
+    BoolType,
+    FnType,
+    BuiltInFnType,
+}
 
 interface AbstractValue {
     readonly typ: Type;
@@ -15,21 +16,21 @@ interface AbstractValue {
 export type Value = NilValue | IntValue | BoolValue | FnValue | BuiltInFnValue;
 
 export interface NilValue extends AbstractValue {
-    readonly typ: "NilType";
+    readonly typ: Type.NilType;
 }
 
 export interface IntValue extends AbstractValue {
-    readonly typ: "IntType";
+    readonly typ: Type.IntType;
     readonly value: number;
 }
 
 export interface BoolValue extends AbstractValue {
-    readonly typ: "BoolType";
+    readonly typ: Type.BoolType;
     readonly value: boolean;
 }
 
 export interface FnValue extends AbstractValue {
-    readonly typ: "FnType";
+    readonly typ: Type.FnType;
     readonly scope: Scope;
     readonly params: string[];
     readonly body: Expr;
@@ -37,23 +38,79 @@ export interface FnValue extends AbstractValue {
 }
 
 export interface BuiltInFnValue extends AbstractValue {
-    readonly typ: "BuiltInFnType";
+    readonly typ: Type.BuiltInFnType;
     readonly name: string;
     readonly arity: number;
     readonly impl: (args: Expr[]) => Value;
 }
 
+function serializeNumber(num: number): number[] {
+    const arr = new ArrayBuffer(4);
+    const view = new DataView(arr);
+    view.setInt32(0, num, false);
+    return [
+        view.getUint8(0),
+        view.getUint8(1),
+        view.getUint8(2),
+        view.getUint8(3),
+    ];
+}
+
+type SizedValue = {
+    value: Value;
+    size: number;
+};
+
+class ValueError extends Error {
+    constructor(message: string) {
+        super(message);
+    }
+}
+
+export function deserialize(view: DataView): SizedValue {
+    const typ = view.getUint8(0);
+    switch (typ) {
+        case Type.BoolType:
+        case Type.BuiltInFnType:
+        case Type.FnType:
+        case Type.NilType:
+            throw new Error("not implemented");
+        case Type.IntType:
+            const num = view.getInt32(1);
+            const value: Value = { typ: Type.IntType, value: num };
+            return { value, size: 5 };
+        default:
+            throw new ValueError(`bad value at byte offset ${view.byteOffset}`);
+    }
+}
+
+export function serialize(value: Value): number[] {
+    const nums: number[] = [];
+    nums.push(value.typ);
+    switch (value.typ) {
+        case Type.BoolType:
+        case Type.BuiltInFnType:
+        case Type.FnType:
+        case Type.NilType:
+            throw new Error("not implemented");
+        case Type.IntType:
+            nums.push(...serializeNumber(value.value));
+            break;
+    }
+    return nums;
+}
+
 export function print(value: Value): string {
     switch (value.typ) {
-        case "BoolType":
+        case Type.BoolType:
             return value.value.toString();
-        case "BuiltInFnType":
+        case Type.BuiltInFnType:
             return `<built-in-fn ${value.name}>`;
-        case "FnType":
+        case Type.FnType:
             return value.name ? `<fn ${value.name}>` : "<anonymous fn>";
-        case "IntType":
+        case Type.IntType:
             return value.value.toString(10);
-        case "NilType":
+        case Type.NilType:
             return "null";
     }
 }

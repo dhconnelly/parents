@@ -13,5 +13,6 @@ export enum Opcode {
 
 export type Instr = {
     op: Opcode;
+    size: number;
     value?: Value;
 };

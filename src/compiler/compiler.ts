@@ -1,5 +1,5 @@
-import { Expr, Prog } from "src/ast";
-import { Value } from "src/values";
+import { Expr, Prog } from "../ast";
+import { serialize, Type, Value } from "../values";
 import { Instr, Opcode } from "../instr";
 
 class CompilerError extends Error {
@@ -9,29 +9,30 @@ class CompilerError extends Error {
 }
 
 class Compiler {
-    instrs: Instr[];
+    bytes: number[];
 
     constructor() {
-        this.instrs = [];
+        this.bytes = [];
     }
 
     pushValue(value: Value) {
-        this.instrs.push({ op: Opcode.Push, value });
+        this.bytes.push(Opcode.Push);
+        this.bytes.push(...serialize(value));
     }
 
     push(op: Opcode) {
-        this.instrs.push({ op });
+        this.bytes.push(op);
     }
 
     compileStmt(expr: Expr) {
         this.compile(expr);
-        this.instrs.push({ op: Opcode.Pop });
+        this.bytes.push(Opcode.Pop);
     }
 
     compile(expr: Expr) {
         switch (expr.typ) {
             case "IntExpr":
-                this.pushValue({ typ: "IntType", value: expr.value });
+                this.pushValue({ typ: Type.IntType, value: expr.value });
                 break;
 
             case "CallExpr":
@@ -61,8 +62,8 @@ class Compiler {
     }
 }
 
-export function compile(prog: Prog): Instr[] {
+export function compile(prog: Prog): Uint8Array {
     const compiler = new Compiler();
     prog.exprs.forEach((expr) => compiler.compileStmt(expr));
-    return compiler.instrs;
+    return Uint8Array.from(compiler.bytes);
 }
