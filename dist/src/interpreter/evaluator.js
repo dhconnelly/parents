@@ -5,7 +5,8 @@ const assert_1 = require("assert");
 const builtins_1 = require("./builtins");
 const values_1 = require("../values");
 const scope_1 = require("./scope");
-class EvaluationError extends Error {
+const util_1 = require("../util");
+class EvaluationError extends util_1.RootError {
     constructor(message) {
         super(message);
     }

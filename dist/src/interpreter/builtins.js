@@ -18,9 +18,23 @@ function installBuiltIns(evaluator) {
         return evaluator.nil;
     });
     evaluator.installBuiltInFn("=", (left, right) => {
-        const x = evaluator.evaluateInt(left);
-        const y = evaluator.evaluateInt(right);
-        return { typ: values_1.Type.BoolType, value: x.value === y.value };
+        const a = evaluator.evaluate(left);
+        let c;
+        switch (a.typ) {
+            case values_1.Type.IntType:
+                c = a.value === evaluator.evaluateInt(right).value;
+                break;
+            case values_1.Type.BoolType:
+                c = a.value === evaluator.evaluateBool(right).value;
+                break;
+            case values_1.Type.NilType:
+                c = evaluator.evaluate(right).typ === values_1.Type.NilType;
+                break;
+            case values_1.Type.BuiltInFnType:
+            case values_1.Type.FnType:
+                throw new Error("unimplemented");
+        }
+        return { typ: values_1.Type.BoolType, value: c };
     });
     evaluator.installBuiltInFn("-", (left, right) => {
         const x = evaluator.evaluateInt(left);

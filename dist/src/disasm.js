@@ -6,7 +6,7 @@ function disasm(bytes) {
     const instrs = [];
     let i = 0;
     while (i < bytes.byteLength) {
-        const instr = instr_1.readInstr(new DataView(bytes.buffer, i));
+        const instr = instr_1.readInstr(bytes, i);
         instrs.push(instr);
         i += instr.size;
     }

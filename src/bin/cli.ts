@@ -4,6 +4,7 @@ import { argv } from "process";
 
 import { compileFile } from "../compiler/index";
 import { runFile } from "../interpreter/index";
+import { executeFile } from "../vm/index";
 
 function main(args: string[]): void {
     if (args.length === 0) {
@@ -21,7 +22,8 @@ function main(args: string[]): void {
             args.slice(1).map(compileFile);
             break;
         case "vm":
-            throw new Error("not implemented");
+            args.slice(1).map(executeFile);
+            break;
         default:
             console.error("error: invalid command. run 'parents help'");
             process.exit(1);

@@ -13,9 +13,9 @@ import {
 } from "./ast";
 import { lex } from "./lexer";
 import { Token, TokenType } from "./token";
-import { Option } from "./util";
+import { Option, RootError } from "./util";
 
-export class ParserError extends Error {
+export class ParserError extends RootError {
     constructor(message: string) {
         super(message);
     }

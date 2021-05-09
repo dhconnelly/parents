@@ -21,8 +21,9 @@ import {
     NilValue,
 } from "../values";
 import { Scope } from "./scope";
+import { RootError } from "../util";
 
-export class EvaluationError extends Error {
+export class EvaluationError extends RootError {
     constructor(message: string) {
         super(message);
     }

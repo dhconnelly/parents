@@ -2,7 +2,8 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.parse = exports.ParserError = void 0;
 const lexer_1 = require("./lexer");
-class ParserError extends Error {
+const util_1 = require("./util");
+class ParserError extends util_1.RootError {
     constructor(message) {
         super(message);
     }

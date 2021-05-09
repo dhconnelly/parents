@@ -1,8 +1,9 @@
 import { Expr, Prog } from "../ast";
 import { Type, Value } from "../values";
 import { Instr, Opcode, writeInstr } from "../instr";
+import { RootError } from "../util";
 
-export class CompilerError extends Error {
+export class CompilerError extends RootError {
     constructor(message: string) {
         super(message);
     }

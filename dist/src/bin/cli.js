@@ -4,6 +4,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const process_1 = require("process");
 const index_1 = require("../compiler/index");
 const index_2 = require("../interpreter/index");
+const index_3 = require("../vm/index");
 function main(args) {
     if (args.length === 0) {
         console.error("usage: parents command [args ...]");
@@ -20,7 +21,8 @@ function main(args) {
             args.slice(1).map(index_1.compileFile);
             break;
         case "vm":
-            throw new Error("not implemented");
+            args.slice(1).map(index_3.executeFile);
+            break;
         default:
             console.error("error: invalid command. run 'parents help'");
             process.exit(1);

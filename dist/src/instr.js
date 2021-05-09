@@ -45,12 +45,11 @@ function writeInstr(instr, data) {
     }
 }
 exports.writeInstr = writeInstr;
-function readInstr(bytes) {
-    const op = bytes.getUint8(0);
+function readInstr(bytes, at) {
+    const op = bytes.getUint8(at);
     switch (op) {
         case Opcode.Push:
-            const subview = new DataView(bytes.buffer, bytes.byteOffset + 1);
-            const { value, size } = values_1.deserialize(subview);
+            const { value, size } = values_1.deserialize(bytes, at + 1);
             return { instr: { op, value: value }, size: size + 1 };
         case Opcode.Pop:
         case Opcode.Add:

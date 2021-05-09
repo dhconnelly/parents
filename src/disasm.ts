@@ -4,7 +4,7 @@ export function disasm(bytes: DataView): SizedInstr[] {
     const instrs: SizedInstr[] = [];
     let i = 0;
     while (i < bytes.byteLength) {
-        const instr = readInstr(new DataView(bytes.buffer, i));
+        const instr = readInstr(bytes, i);
         instrs.push(instr);
         i += instr.size;
     }

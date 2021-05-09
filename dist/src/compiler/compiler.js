@@ -3,7 +3,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.compile = exports.CompilerError = void 0;
 const values_1 = require("../values");
 const instr_1 = require("../instr");
-class CompilerError extends Error {
+const util_1 = require("../util");
+class CompilerError extends util_1.RootError {
     constructor(message) {
         super(message);
     }

@@ -1,8 +1,8 @@
-import { Option } from "./util";
+import { Option, RootError } from "./util";
 import { Token, TokenType } from "./token";
 import { hasValue } from "./util";
 
-export class LexerError extends Error {
+export class LexerError extends RootError {
     constructor(message: string) {
         super(message);
     }

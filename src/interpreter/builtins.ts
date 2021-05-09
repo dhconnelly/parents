@@ -1,3 +1,4 @@
+import { Option } from "src/util";
 import { Expr, printExpr } from "../ast";
 import { Type, Value, print } from "../values";
 import { Evaluator } from "./evaluator";
@@ -22,9 +23,23 @@ export function installBuiltIns(evaluator: Evaluator) {
     evaluator.installBuiltInFn(
         "=",
         (left: Expr, right: Expr): Value => {
-            const x = evaluator.evaluateInt(left);
-            const y = evaluator.evaluateInt(right);
-            return { typ: Type.BoolType, value: x.value === y.value };
+            const a = evaluator.evaluate(left);
+            let c: Option<boolean>;
+            switch (a.typ) {
+                case Type.IntType:
+                    c = a.value === evaluator.evaluateInt(right).value;
+                    break;
+                case Type.BoolType:
+                    c = a.value === evaluator.evaluateBool(right).value;
+                    break;
+                case Type.NilType:
+                    c = evaluator.evaluate(right).typ === Type.NilType;
+                    break;
+                case Type.BuiltInFnType:
+                case Type.FnType:
+                    throw new Error("unimplemented");
+            }
+            return { typ: Type.BoolType, value: c };
         }
     );
 
