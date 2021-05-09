@@ -3,12 +3,13 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.print = exports.serialize = exports.deserialize = exports.Type = void 0;
 var Type;
 (function (Type) {
-    Type[Type["NilType"] = 0] = "NilType";
-    Type[Type["IntType"] = 1] = "IntType";
-    Type[Type["BoolType"] = 2] = "BoolType";
-    Type[Type["FnType"] = 3] = "FnType";
-    Type[Type["BuiltInFnType"] = 4] = "BuiltInFnType";
+    Type[Type["NilType"] = 1] = "NilType";
+    Type[Type["IntType"] = 2] = "IntType";
+    Type[Type["BoolType"] = 3] = "BoolType";
+    Type[Type["FnType"] = 4] = "FnType";
+    Type[Type["BuiltInFnType"] = 5] = "BuiltInFnType";
 })(Type = exports.Type || (exports.Type = {}));
+// return the bytes of |num| in big-endian order
 function serializeNumber(num) {
     const arr = new ArrayBuffer(4);
     const view = new DataView(arr);
@@ -42,6 +43,12 @@ function deserialize(view) {
     }
 }
 exports.deserialize = deserialize;
+// serializes |value| to bytes, prefixed by a single byte representing the
+// type of the value (see enum Type for the value).
+//
+// layouts:
+// int: big-endian signed 32-bit int
+// others: not yet implemented
 function serialize(value) {
     const nums = [];
     nums.push(value.typ);

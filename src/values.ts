@@ -2,11 +2,11 @@ import { Expr } from "./ast";
 import { Scope } from "./interpreter/scope";
 
 export enum Type {
-    NilType,
-    IntType,
-    BoolType,
-    FnType,
-    BuiltInFnType,
+    NilType = 1,
+    IntType = 2,
+    BoolType = 3,
+    FnType = 4,
+    BuiltInFnType = 5,
 }
 
 interface AbstractValue {
@@ -44,6 +44,7 @@ export interface BuiltInFnValue extends AbstractValue {
     readonly impl: (args: Expr[]) => Value;
 }
 
+// return the bytes of |num| in big-endian order
 function serializeNumber(num: number): number[] {
     const arr = new ArrayBuffer(4);
     const view = new DataView(arr);
@@ -84,6 +85,12 @@ export function deserialize(view: DataView): SizedValue {
     }
 }
 
+// serializes |value| to bytes, prefixed by a single byte representing the
+// type of the value (see enum Type for the value).
+//
+// layouts:
+// int: big-endian signed 32-bit int
+// others: not yet implemented
 export function serialize(value: Value): number[] {
     const nums: number[] = [];
     nums.push(value.typ);

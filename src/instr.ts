@@ -39,6 +39,15 @@ function cannot(x: never): never {
     throw new Error("never");
 }
 
+// bytecode format:
+// - variable-length instructions
+// - many are one byte, unless they carry a value
+//
+// layout:
+// without value: [ opcode ]
+// with value: [ opcode | type | value bytes... ]
+//
+// See values.ts for details on the value serialization format.
 export function writeInstr(instr: Instr, data: number[]): SizedInstr {
     data.push(instr.op);
     switch (instr.op) {
