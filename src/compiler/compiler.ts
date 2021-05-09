@@ -1,12 +1,14 @@
 import { Expr, Prog } from "../ast";
-import { serialize, Type, Value } from "../values";
-import { Instr, Opcode } from "../instr";
+import { Type, Value } from "../values";
+import { Instr, Opcode, writeInstr } from "../instr";
 
 class CompilerError extends Error {
     constructor(message: string) {
         super(message);
     }
 }
+
+const BUILT_INS = new Set(["+", "-", "=", "<", "assert", "display"]);
 
 class Compiler {
     bytes: number[];
@@ -15,18 +17,24 @@ class Compiler {
         this.bytes = [];
     }
 
+    push(instr: Instr) {
+        writeInstr(instr, this.bytes);
+    }
+
     pushValue(value: Value) {
-        this.bytes.push(Opcode.Push);
-        this.bytes.push(...serialize(value));
+        this.push({ op: Opcode.Push, value });
     }
 
-    push(op: Opcode) {
-        this.bytes.push(op);
-    }
-
-    compileStmt(expr: Expr) {
-        this.compile(expr);
-        this.bytes.push(Opcode.Pop);
+    compileBuiltIn(name: string) {
+        // prettier-ignore
+        switch (name) {
+            case "+": return this.push({ op: Opcode.Add });
+            case "-": return this.push({ op: Opcode.Sub });
+            case "=": return this.push({ op: Opcode.Eq });
+            case "<": return this.push({ op: Opcode.Lt });
+            case "assert": return this.push({ op: Opcode.Assert });
+            case "display": return this.push({ op: Opcode.Display });
+        }
     }
 
     compile(expr: Expr) {
@@ -39,26 +47,28 @@ class Compiler {
                 for (const arg of expr.args) {
                     this.compile(arg);
                 }
-                if (expr.f.typ == "IdentExpr") {
-                    switch (expr.f.value) {
-                        case "+":
-                            this.push(Opcode.Add);
-                            break;
-                        case "-":
-                            this.push(Opcode.Sub);
-                            break;
-                        case "<":
-                            this.push(Opcode.Lt);
-                            break;
-                        case "=":
-                            this.push(Opcode.Eq);
-                            break;
-                    }
+                if (expr.f.typ == "IdentExpr" && BUILT_INS.has(expr.f.value)) {
+                    this.compileBuiltIn(expr.f.value);
                 } else {
                     throw new Error("not implemented");
                 }
                 break;
+
+            case "BoolExpr":
+            case "DefineExpr":
+            case "IdentExpr":
+            case "IfExpr":
+            case "IntExpr":
+            case "LambdaExpr":
+            case "LetExpr":
+            case "SeqExpr":
+                throw new Error("not implemented");
         }
+    }
+
+    compileStmt(expr: Expr) {
+        this.compile(expr);
+        this.push({ op: Opcode.Pop });
     }
 }
 
