@@ -1,20 +1,16 @@
-import { LexerError } from "../lexer";
-import { parse, ParserError } from "../parser";
-import { evaluate, EvaluationError } from "./evaluator";
+import { readFileSync } from "fs";
 
-export function runScript(name: string, script: string) {
+import { parse } from "../parser";
+import { evaluate } from "./evaluator";
+
+export function runFile(file: string) {
+    console.log(`> running ${file}`);
     try {
+        const script = readFileSync(file, "utf8");
         const ast = parse(script);
         evaluate(ast);
     } catch (error) {
-        if (
-            error instanceof LexerError ||
-            error instanceof ParserError ||
-            error instanceof EvaluationError
-        ) {
-            console.error(`${name}: ${error.message}`);
-        } else {
-            throw error;
-        }
+        console.error(`${file}: ${error.message}`);
+        return;
     }
 }

@@ -2,10 +2,14 @@ import { Expr, Prog } from "../ast";
 import { Type, Value } from "../values";
 import { Instr, Opcode, writeInstr } from "../instr";
 
-class CompilerError extends Error {
+export class CompilerError extends Error {
     constructor(message: string) {
         super(message);
     }
+}
+
+function notImplemented() {
+    throw new Error("not implemented");
 }
 
 const BUILT_INS = new Set(["+", "-", "=", "<", "assert", "display"]);
@@ -54,7 +58,7 @@ class Compiler {
                 if (expr.f.typ == "IdentExpr" && BUILT_INS.has(expr.f.value)) {
                     this.compileBuiltIn(expr.f.value);
                 } else {
-                    throw new Error("not implemented");
+                    notImplemented();
                 }
                 break;
 
@@ -65,7 +69,7 @@ class Compiler {
             case "LambdaExpr":
             case "LetExpr":
             case "SeqExpr":
-                throw new Error("not implemented");
+                notImplemented();
         }
     }
 

@@ -1,12 +1,16 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.compile = void 0;
+exports.compile = exports.CompilerError = void 0;
 const values_1 = require("../values");
 const instr_1 = require("../instr");
 class CompilerError extends Error {
     constructor(message) {
         super(message);
     }
+}
+exports.CompilerError = CompilerError;
+function notImplemented() {
+    throw new Error("not implemented");
 }
 const BUILT_INS = new Set(["+", "-", "=", "<", "assert", "display"]);
 class Compiler {
@@ -46,7 +50,7 @@ class Compiler {
                     this.compileBuiltIn(expr.f.value);
                 }
                 else {
-                    throw new Error("not implemented");
+                    notImplemented();
                 }
                 break;
             case "DefineExpr":
@@ -56,7 +60,7 @@ class Compiler {
             case "LambdaExpr":
             case "LetExpr":
             case "SeqExpr":
-                throw new Error("not implemented");
+                notImplemented();
         }
     }
     compileStmt(expr) {

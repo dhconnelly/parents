@@ -1,24 +1,31 @@
 #!/usr/bin/env node
 
-import { readFileSync } from "fs";
 import { argv } from "process";
 
-import { runScript } from "../interpreter/index";
-
-export function runFile(path: string) {
-    console.log(">", path);
-    let script = null;
-    try {
-        script = readFileSync(path, "utf8");
-    } catch (error) {
-        console.error(`can't read file ${path}: ${error.message}`);
-        return;
-    }
-    runScript(path, script);
-}
+import { compileFile } from "../compiler/index";
+import { runFile } from "../interpreter/index";
 
 function main(args: string[]): void {
-    args.forEach(runFile);
+    if (args.length === 0) {
+        console.error("usage: parents command [args ...]");
+        process.exit(1);
+    }
+    switch (args[0]) {
+        case "help":
+            console.log("available commands: help, run, compile, vm");
+            break;
+        case "run":
+            args.slice(1).map(runFile);
+            break;
+        case "compile":
+            args.slice(1).map(compileFile);
+            break;
+        case "vm":
+            throw new Error("not implemented");
+        default:
+            console.error("error: invalid command. run 'parents help'");
+            process.exit(1);
+    }
 }
 
 main(argv.slice(2));

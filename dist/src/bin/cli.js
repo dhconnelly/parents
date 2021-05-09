@@ -1,24 +1,29 @@
 #!/usr/bin/env node
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.runFile = void 0;
-const fs_1 = require("fs");
 const process_1 = require("process");
-const index_1 = require("../interpreter/index");
-function runFile(path) {
-    console.log(">", path);
-    let script = null;
-    try {
-        script = fs_1.readFileSync(path, "utf8");
-    }
-    catch (error) {
-        console.error(`can't read file ${path}: ${error.message}`);
-        return;
-    }
-    index_1.runScript(path, script);
-}
-exports.runFile = runFile;
+const index_1 = require("../compiler/index");
+const index_2 = require("../interpreter/index");
 function main(args) {
-    args.forEach(runFile);
+    if (args.length === 0) {
+        console.error("usage: parents command [args ...]");
+        process.exit(1);
+    }
+    switch (args[0]) {
+        case "help":
+            console.log("available commands: help, run, compile, vm");
+            break;
+        case "run":
+            args.slice(1).map(index_2.runFile);
+            break;
+        case "compile":
+            args.slice(1).map(index_1.compileFile);
+            break;
+        case "vm":
+            throw new Error("not implemented");
+        default:
+            console.error("error: invalid command. run 'parents help'");
+            process.exit(1);
+    }
 }
 main(process_1.argv.slice(2));
