@@ -1,5 +1,5 @@
 import { Expr, printExpr } from "../ast";
-import { Value, print } from "../values";
+import { Type, Value, print } from "../values";
 import { Evaluator } from "./evaluator";
 
 export function installBuiltIns(evaluator: Evaluator) {
@@ -24,7 +24,7 @@ export function installBuiltIns(evaluator: Evaluator) {
         (left: Expr, right: Expr): Value => {
             const x = evaluator.evaluateInt(left);
             const y = evaluator.evaluateInt(right);
-            return { typ: "BoolType", value: x.value === y.value };
+            return { typ: Type.BoolType, value: x.value === y.value };
         }
     );
 
@@ -33,7 +33,7 @@ export function installBuiltIns(evaluator: Evaluator) {
         (left: Expr, right: Expr): Value => {
             const x = evaluator.evaluateInt(left);
             const y = evaluator.evaluateInt(right);
-            return { typ: "IntType", value: x.value - y.value };
+            return { typ: Type.IntType, value: x.value - y.value };
         }
     );
 
@@ -42,7 +42,7 @@ export function installBuiltIns(evaluator: Evaluator) {
         (left: Expr, right: Expr): Value => {
             const x = evaluator.evaluateInt(left);
             const y = evaluator.evaluateInt(right);
-            return { typ: "IntType", value: x.value * y.value };
+            return { typ: Type.IntType, value: x.value * y.value };
         }
     );
 
@@ -51,7 +51,7 @@ export function installBuiltIns(evaluator: Evaluator) {
         (left: Expr, right: Expr): Value => {
             const x = evaluator.evaluateInt(left);
             const y = evaluator.evaluateInt(right);
-            return { typ: "BoolType", value: x.value < y.value };
+            return { typ: Type.BoolType, value: x.value < y.value };
         }
     );
 
@@ -60,7 +60,7 @@ export function installBuiltIns(evaluator: Evaluator) {
         (left: Expr, right: Expr): Value => {
             const x = evaluator.evaluateInt(left);
             const y = evaluator.evaluateInt(right);
-            return { typ: "IntType", value: x.value + y.value };
+            return { typ: Type.IntType, value: x.value + y.value };
         }
     );
 
@@ -68,8 +68,8 @@ export function installBuiltIns(evaluator: Evaluator) {
         "isnil",
         (arg): Value => {
             const value = evaluator.evaluate(arg);
-            const isNil = value.typ === "NilType";
-            return { typ: "BoolType", value: isNil };
+            const isNil = value.typ === Type.NilType;
+            return { typ: Type.BoolType, value: isNil };
         }
     );
 }

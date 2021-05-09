@@ -20,32 +20,32 @@ function installBuiltIns(evaluator) {
     evaluator.installBuiltInFn("=", (left, right) => {
         const x = evaluator.evaluateInt(left);
         const y = evaluator.evaluateInt(right);
-        return { typ: "BoolType", value: x.value === y.value };
+        return { typ: values_1.Type.BoolType, value: x.value === y.value };
     });
     evaluator.installBuiltInFn("-", (left, right) => {
         const x = evaluator.evaluateInt(left);
         const y = evaluator.evaluateInt(right);
-        return { typ: "IntType", value: x.value - y.value };
+        return { typ: values_1.Type.IntType, value: x.value - y.value };
     });
     evaluator.installBuiltInFn("*", (left, right) => {
         const x = evaluator.evaluateInt(left);
         const y = evaluator.evaluateInt(right);
-        return { typ: "IntType", value: x.value * y.value };
+        return { typ: values_1.Type.IntType, value: x.value * y.value };
     });
     evaluator.installBuiltInFn("<", (left, right) => {
         const x = evaluator.evaluateInt(left);
         const y = evaluator.evaluateInt(right);
-        return { typ: "BoolType", value: x.value < y.value };
+        return { typ: values_1.Type.BoolType, value: x.value < y.value };
     });
     evaluator.installBuiltInFn("+", (left, right) => {
         const x = evaluator.evaluateInt(left);
         const y = evaluator.evaluateInt(right);
-        return { typ: "IntType", value: x.value + y.value };
+        return { typ: values_1.Type.IntType, value: x.value + y.value };
     });
     evaluator.installBuiltInFn("isnil", (arg) => {
         const value = evaluator.evaluate(arg);
-        const isNil = value.typ === "NilType";
-        return { typ: "BoolType", value: isNil };
+        const isNil = value.typ === values_1.Type.NilType;
+        return { typ: values_1.Type.BoolType, value: isNil };
     });
 }
 exports.installBuiltIns = installBuiltIns;

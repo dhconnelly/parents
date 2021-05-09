@@ -46,7 +46,11 @@ function lookupError(expr: IdentExpr): EvaluationError {
     );
 }
 
-function typeError(want: string, got: Type, expr: Expr): EvaluationError {
+function typeError(
+    want: Type | Type[],
+    got: Type,
+    expr: Expr
+): EvaluationError {
     return new EvaluationError(
         `type error at ${expr.line}:${expr.col}: want ${want}, got ${got}`
     );
@@ -60,7 +64,7 @@ export class Evaluator {
     constructor() {
         this.global = new Scope();
         this.top = this.global;
-        this.nil = { typ: "NilType" };
+        this.nil = { typ: Type.NilType };
     }
 
     lookup(expr: IdentExpr): Value {
@@ -77,7 +81,7 @@ export class Evaluator {
 
     installBuiltInFn(name: string, fn: (...args: Expr[]) => Value) {
         this.define(name, {
-            typ: "BuiltInFnType",
+            typ: Type.BuiltInFnType,
             arity: fn.length,
             name: name,
             impl: (args) => fn.apply(null, args),
@@ -96,24 +100,24 @@ export class Evaluator {
 
     evaluateBool(expr: Expr): BoolValue {
         const value = this.evaluate(expr);
-        if (value.typ !== "BoolType") {
-            throw typeError("BoolType", value.typ, expr);
+        if (value.typ !== Type.BoolType) {
+            throw typeError(Type.BoolType, value.typ, expr);
         }
         return value;
     }
 
     evaluateInt(expr: Expr): IntValue {
         const value = this.evaluate(expr);
-        if (value.typ !== "IntType") {
-            throw typeError("IntType", value.typ, expr);
+        if (value.typ !== Type.IntType) {
+            throw typeError(Type.IntType, value.typ, expr);
         }
         return value;
     }
 
     evaluateFn(expr: Expr): FnValue | BuiltInFnValue {
         const value = this.evaluate(expr);
-        if (value.typ !== "FnType" && value.typ !== "BuiltInFnType") {
-            throw typeError("FnType or BuiltInFnType", value.typ, expr);
+        if (value.typ !== Type.FnType && value.typ !== Type.BuiltInFnType) {
+            throw typeError([Type.FnType, Type.BuiltInFnType], value.typ, expr);
         }
         return value;
     }
@@ -179,7 +183,7 @@ export class Evaluator {
 
     evaluateCall(expr: CallExpr): Value {
         const f = this.evaluateFn(expr.f);
-        if (f.typ === "FnType") {
+        if (f.typ === Type.FnType) {
             return this.evaluateUserCall(f, expr);
         } else {
             return this.evaluateBuiltInCall(f, expr);
@@ -188,7 +192,7 @@ export class Evaluator {
 
     makeLambda(expr: LambdaExpr): FnValue {
         return {
-            typ: "FnType",
+            typ: Type.FnType,
             body: expr.body,
             params: expr.params,
             name: expr.name,
@@ -210,11 +214,11 @@ export class Evaluator {
             case "IdentExpr":
                 return this.lookup(expr);
             case "BoolExpr":
-                return { typ: "BoolType", value: expr.value };
+                return { typ: Type.BoolType, value: expr.value };
             case "IfExpr":
                 return this.evaluateIf(expr);
             case "IntExpr":
-                return { typ: "IntType", value: expr.value };
+                return { typ: Type.IntType, value: expr.value };
             case "LambdaExpr":
                 return this.makeLambda(expr);
             case "SeqExpr":
