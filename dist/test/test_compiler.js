@@ -28,6 +28,16 @@ mocha_1.describe("compiler", function () {
         ];
         assert_1.default.deepStrictEqual(expected, instrs);
     });
+    mocha_1.it("compiles booleans", function () {
+        const instrs = compile("#t #f");
+        const expected = [
+            { op: instr_1.Opcode.Push, value: { typ: values_1.Type.BoolType, value: true } },
+            { op: instr_1.Opcode.Pop },
+            { op: instr_1.Opcode.Push, value: { typ: values_1.Type.BoolType, value: false } },
+            { op: instr_1.Opcode.Pop },
+        ];
+        assert_1.default.deepStrictEqual(expected, instrs);
+    });
     mocha_1.it("compiles =", function () {
         const instrs = compile("(= 11 11)");
         const expected = [
@@ -64,6 +74,24 @@ mocha_1.describe("compiler", function () {
             { op: instr_1.Opcode.Push, value: { typ: values_1.Type.IntType, value: 5 } },
             { op: instr_1.Opcode.Push, value: { typ: values_1.Type.IntType, value: 10 } },
             { op: instr_1.Opcode.Add },
+            { op: instr_1.Opcode.Pop },
+        ];
+        assert_1.default.deepStrictEqual(expected, instrs);
+    });
+    mocha_1.it("compiles assert", function () {
+        const instrs = compile("(assert #f)");
+        const expected = [
+            { op: instr_1.Opcode.Push, value: { typ: values_1.Type.BoolType, value: false } },
+            { op: instr_1.Opcode.Assert },
+            { op: instr_1.Opcode.Pop },
+        ];
+        assert_1.default.deepStrictEqual(expected, instrs);
+    });
+    mocha_1.it("compiles display", function () {
+        const instrs = compile("(display -42)");
+        const expected = [
+            { op: instr_1.Opcode.Push, value: { typ: values_1.Type.IntType, value: -42 } },
+            { op: instr_1.Opcode.Display },
             { op: instr_1.Opcode.Pop },
         ];
         assert_1.default.deepStrictEqual(expected, instrs);

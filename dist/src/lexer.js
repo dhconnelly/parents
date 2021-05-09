@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.lex = exports.LexerError = void 0;
+const util_1 = require("./util");
 class LexerError extends Error {
     constructor(message) {
         super(message);
@@ -20,6 +21,11 @@ class Lexer {
     }
     atEnd() {
         return this.pos >= this.text.length;
+    }
+    maybe_peek(n) {
+        if (this.pos + n >= this.text.length)
+            return undefined;
+        return this.text[this.pos + n];
     }
     peek() {
         if (this.pos >= this.text.length) {
@@ -86,8 +92,16 @@ class Lexer {
         }
     }
     int() {
+        let negative = false;
+        if (this.peek().text === "-") {
+            negative = true;
+            this.eat();
+        }
         const tok = this.eatWhile(IS_NUM);
-        return this.emit("int", tok);
+        return this.emit("int", {
+            ...tok,
+            text: negative ? "-" + tok.text : tok.text,
+        });
     }
     boolean() {
         this.eat("#");
@@ -111,8 +125,12 @@ class Lexer {
                     return this.emit("rparen", this.eat());
                 case "#":
                     return this.boolean();
-                case "+":
                 case "-":
+                    const next = this.maybe_peek(1);
+                    if (util_1.hasValue(next) && IS_NUM.test(next))
+                        return this.int();
+                // fallthrough
+                case "+":
                 case "*":
                 case "=":
                 case "<":

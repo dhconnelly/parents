@@ -71,15 +71,26 @@ class ValueError extends Error {
 export function deserialize(view: DataView): SizedValue {
     const typ = view.getUint8(0);
     switch (typ) {
-        case Type.BoolType:
+        case Type.IntType: {
+            const num = view.getInt32(1);
+            const value: Value = { typ: Type.IntType, value: num };
+            return { value, size: 5 };
+        }
+
+        case Type.BoolType: {
+            const bool = view.getUint8(1);
+            if (bool !== 0 && bool !== 1)
+                throw new ValueError(
+                    `bad boolean value at byte offset ${view.byteOffset}: ${bool}`
+                );
+            const value = bool === 0 ? false : true;
+            return { value: { typ: Type.BoolType, value }, size: 2 };
+        }
+
         case Type.BuiltInFnType:
         case Type.FnType:
         case Type.NilType:
             throw new Error("not implemented");
-        case Type.IntType:
-            const num = view.getInt32(1);
-            const value: Value = { typ: Type.IntType, value: num };
-            return { value, size: 5 };
         default:
             throw new ValueError(`bad value at byte offset ${view.byteOffset}`);
     }
@@ -95,14 +106,18 @@ export function serialize(value: Value): number[] {
     const nums: number[] = [];
     nums.push(value.typ);
     switch (value.typ) {
+        case Type.IntType:
+            nums.push(...serializeNumber(value.value));
+            break;
+
         case Type.BoolType:
+            nums.push(value.value ? 1 : 0);
+            break;
+
         case Type.BuiltInFnType:
         case Type.FnType:
         case Type.NilType:
             throw new Error("not implemented");
-        case Type.IntType:
-            nums.push(...serializeNumber(value.value));
-            break;
     }
     return nums;
 }

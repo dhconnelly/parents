@@ -35,6 +35,9 @@ class Compiler {
             case "IntExpr":
                 this.pushValue({ typ: values_1.Type.IntType, value: expr.value });
                 break;
+            case "BoolExpr":
+                this.pushValue({ typ: values_1.Type.BoolType, value: expr.value });
+                break;
             case "CallExpr":
                 for (const arg of expr.args) {
                     this.compile(arg);
@@ -46,7 +49,6 @@ class Compiler {
                     throw new Error("not implemented");
                 }
                 break;
-            case "BoolExpr":
             case "DefineExpr":
             case "IdentExpr":
             case "IfExpr":

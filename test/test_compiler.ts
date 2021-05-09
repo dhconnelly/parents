@@ -27,6 +27,17 @@ describe("compiler", function () {
         assert.deepStrictEqual(expected, instrs);
     });
 
+    it("compiles booleans", function () {
+        const instrs = compile("#t #f");
+        const expected: Instr[] = [
+            { op: Opcode.Push, value: { typ: Type.BoolType, value: true } },
+            { op: Opcode.Pop },
+            { op: Opcode.Push, value: { typ: Type.BoolType, value: false } },
+            { op: Opcode.Pop },
+        ];
+        assert.deepStrictEqual(expected, instrs);
+    });
+
     it("compiles =", function () {
         const instrs = compile("(= 11 11)");
         const expected: Instr[] = [
@@ -66,6 +77,26 @@ describe("compiler", function () {
             { op: Opcode.Push, value: { typ: Type.IntType, value: 5 } },
             { op: Opcode.Push, value: { typ: Type.IntType, value: 10 } },
             { op: Opcode.Add },
+            { op: Opcode.Pop },
+        ];
+        assert.deepStrictEqual(expected, instrs);
+    });
+
+    it("compiles assert", function () {
+        const instrs = compile("(assert #f)");
+        const expected: Instr[] = [
+            { op: Opcode.Push, value: { typ: Type.BoolType, value: false } },
+            { op: Opcode.Assert },
+            { op: Opcode.Pop },
+        ];
+        assert.deepStrictEqual(expected, instrs);
+    });
+
+    it("compiles display", function () {
+        const instrs = compile("(display -42)");
+        const expected: Instr[] = [
+            { op: Opcode.Push, value: { typ: Type.IntType, value: -42 } },
+            { op: Opcode.Display },
             { op: Opcode.Pop },
         ];
         assert.deepStrictEqual(expected, instrs);
