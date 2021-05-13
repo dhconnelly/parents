@@ -1,20 +1,17 @@
-(define fact
-  (lambda fact (n)
+(define (fact n)
     (if (< n 2)
         n
-        (* n (fact (- n 1))))))
+        (* n (fact (- n 1)))))
 
-(define main
-  (lambda ()
-    (display (fact 5))))
+(define (main)
+    (display (fact 5)))
 
 (main)
 
-(define fib
-  (lambda fib (n)
+(define (fib n)
     (if (< n 2)
         n
-        (+ (fib (- n 1)) (fib (- n 2))))))
+        (+ (fib (- n 1)) (fib (- n 2)))))
 
 (display (fib 10))
 
