@@ -51,7 +51,7 @@ export interface IfExpr extends AbstractExpr {
     readonly typ: "IfExpr";
     readonly cond: Expr;
     readonly cons: Expr;
-    readonly alt?: Expr;
+    readonly alt: Expr;
 }
 
 export interface SeqExpr extends AbstractExpr {

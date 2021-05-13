@@ -121,7 +121,7 @@ class Parser {
         this.eat("if");
         const cond = this.expr();
         const cons = this.expr();
-        const alt = this.peek().typ === "rparen" ? undefined : this.expr();
+        const alt = this.expr();
         this.eat("rparen");
         return {
             line: tok.line,
