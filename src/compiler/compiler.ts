@@ -1,4 +1,4 @@
-import { Expr, Prog } from "../ast";
+import { Expr, printExpr, Prog } from "../ast";
 import { serializeNumber, Type, Value } from "../values";
 import { Instr, Opcode, writeInstr } from "../instr";
 import { RootError } from "../util";
@@ -9,8 +9,8 @@ export class CompilerError extends RootError {
     }
 }
 
-function notImplemented() {
-    throw new Error("not implemented");
+function notImplemented(expr: Expr) {
+    throw new Error(`not implemented: ${printExpr(expr)}`);
 }
 
 const BUILT_INS = new Set(["+", "-", "=", "<", "assert", "display"]);
@@ -65,7 +65,7 @@ class Compiler {
                 if (expr.f.typ == "IdentExpr" && BUILT_INS.has(expr.f.value)) {
                     this.compileBuiltIn(expr.f.value);
                 } else {
-                    notImplemented();
+                    notImplemented(expr);
                 }
                 break;
 
@@ -83,13 +83,26 @@ class Compiler {
                 writeInt(this.bytes, jmp2, pc2);
                 break;
 
+            case "SeqExpr": {
+                const exprs = expr.exprs;
+                if (exprs.length === 0) break;
+                this.compile(exprs[0]);
+                for (let i = 1; i < exprs.length; i++) {
+                    this.push({ op: Opcode.Pop });
+                    this.compile(exprs[i]);
+                }
+                break;
+            }
+
             case "DefineExpr":
             case "IdentExpr":
-            case "IntExpr":
             case "LambdaExpr":
             case "LetExpr":
-            case "SeqExpr":
-                notImplemented();
+                notImplemented(expr);
+                break;
+
+            default:
+                const __fail: never = expr;
         }
     }
 
