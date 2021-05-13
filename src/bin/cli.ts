@@ -2,6 +2,7 @@
 
 import { argv } from "process";
 
+import { printDisassembled } from "../disasm/index";
 import { compileFile } from "../compiler/index";
 import { runFile } from "../interpreter/index";
 import { executeFile } from "../vm/index";
@@ -16,13 +17,16 @@ function main(args: string[]): void {
             console.log("available commands: help, run, compile, vm");
             break;
         case "run":
-            args.slice(1).map(runFile);
+            args.slice(1).forEach(runFile);
             break;
         case "compile":
-            args.slice(1).map(compileFile);
+            args.slice(1).forEach(compileFile);
             break;
         case "vm":
-            args.slice(1).map(executeFile);
+            args.slice(1).forEach(executeFile);
+            break;
+        case "disasm":
+            args.slice(1).forEach(printDisassembled);
             break;
         default:
             console.error("error: invalid command. run 'parents help'");

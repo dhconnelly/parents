@@ -84,7 +84,7 @@ export function getBool(value: Value): boolean {
 }
 
 // return the bytes of |num| in big-endian order
-function serializeNumber(num: number): number[] {
+export function serializeNumber(num: number): number[] {
     const arr = new ArrayBuffer(4);
     const view = new DataView(arr);
     view.setInt32(0, num, false);

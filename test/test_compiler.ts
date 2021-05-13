@@ -5,7 +5,7 @@ import { Instr, Opcode } from "../src/instr";
 import { compile as compileAST } from "../src/compiler/compiler";
 import { parse } from "../src/parser";
 import { Type } from "../src/values";
-import { disasm } from "../src/disasm";
+import { disasm } from "../src/disasm/disasm";
 
 function compile(text: string): Instr[] {
     const prog = parse(text);
@@ -98,6 +98,22 @@ describe("compiler", function () {
             { op: Opcode.Push, value: { typ: Type.IntType, value: -42 } },
             { op: Opcode.Display },
             { op: Opcode.Pop },
+        ];
+        assert.deepStrictEqual(expected, instrs);
+    });
+
+    it("compiles if", function () {
+        const instrs = compile("(if #t (display 1) (display 2))");
+        // prettier-ignore
+        const expected: Instr[] = [
+        /* 0 */ { op: Opcode.Push, value: { typ: Type.BoolType, value: true } },
+        /* 3 */ { op: Opcode.JmpIf, pc: 20 },
+        /* 8 */ { op: Opcode.Push, value: { typ: Type.IntType, value: 2 } },
+        /* 14 */ { op: Opcode.Display },
+        /* 15 */ { op: Opcode.Jmp, pc: 27 },
+        /* 20 */ { op: Opcode.Push, value: { typ: Type.IntType, value: 1 } },
+        /* 26 */ { op: Opcode.Display },
+        /* 27 */ { op: Opcode.Pop },
         ];
         assert.deepStrictEqual(expected, instrs);
     });

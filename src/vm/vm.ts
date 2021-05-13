@@ -1,5 +1,5 @@
 import { Type, Value, getInt, print, getBool } from "../values";
-import { Opcode, readInstr } from "../instr";
+import { Opcode, printInstr, readInstr } from "../instr";
 import { Option, RootError, unwrap } from "../util";
 
 class ExecutionError extends RootError {
@@ -40,22 +40,25 @@ class VM {
         const { instr, size } = readInstr(this.program, this.pc);
         if (this.debug) {
             this.log();
-            console.log(JSON.stringify(instr));
+            console.log(printInstr(instr));
             console.log();
         }
         switch (instr.op) {
             case Opcode.Push:
                 this.stack.push(instr.value);
+                this.pc += size;
                 break;
 
             case Opcode.Pop:
                 this.popStack();
+                this.pc += size;
                 break;
 
             case Opcode.Add: {
                 const b = getInt(this.popStack());
                 const a = getInt(this.popStack());
                 this.stack.push({ typ: Type.IntType, value: a + b });
+                this.pc += size;
                 break;
             }
 
@@ -63,6 +66,7 @@ class VM {
                 const b = getInt(this.popStack());
                 const a = getInt(this.popStack());
                 this.stack.push({ typ: Type.IntType, value: a - b });
+                this.pc += size;
                 break;
             }
 
@@ -80,6 +84,7 @@ class VM {
                         throw new Error("unimplemented");
                 }
                 this.stack.push({ typ: Type.BoolType, value: c });
+                this.pc += size;
                 break;
             }
 
@@ -87,6 +92,7 @@ class VM {
                 const b = getInt(this.popStack());
                 const a = getInt(this.popStack());
                 this.stack.push({ typ: Type.BoolType, value: a < b });
+                this.pc += size;
                 break;
             }
 
@@ -94,15 +100,31 @@ class VM {
                 const value = getBool(this.popStack());
                 if (!value) console.log("assertion failed");
                 this.stack.push({ typ: Type.NilType });
+                this.pc += size;
                 break;
             }
 
             case Opcode.Display:
                 console.log(print(this.popStack()));
                 this.stack.push({ typ: Type.NilType });
+                this.pc += size;
                 break;
+
+            case Opcode.JmpIf:
+                if (getBool(this.popStack())) {
+                    this.pc = instr.pc;
+                } else {
+                    this.pc += size;
+                }
+                break;
+
+            case Opcode.Jmp:
+                this.pc = instr.pc;
+                break;
+
+            default:
+                const __fail: never = instr;
         }
-        this.pc += size;
     }
 
     run() {
