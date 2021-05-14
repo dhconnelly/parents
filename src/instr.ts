@@ -17,6 +17,8 @@ export enum Opcode {
     Display = 8,
     JmpIf = 9,
     Jmp = 10,
+    DefGlobal = 11,
+    GetGlobal = 12,
 }
 
 export type Instr =
@@ -29,7 +31,9 @@ export type Instr =
     | AssertInstr
     | DisplayInstr
     | JmpIfInstr
-    | JmpInstr;
+    | JmpInstr
+    | DefGlobalInstr
+    | GetGlobalInstr;
 
 type PushInstr = { readonly op: Opcode.Push; readonly value: Value };
 type PopInstr = { readonly op: Opcode.Pop };
@@ -39,8 +43,10 @@ type LtInstr = { readonly op: Opcode.Lt };
 type EqInstr = { readonly op: Opcode.Eq };
 type DisplayInstr = { readonly op: Opcode.Display };
 type AssertInstr = { readonly op: Opcode.Assert };
-type JmpIfInstr = { readonly op: Opcode.JmpIf; pc: number };
-type JmpInstr = { readonly op: Opcode.Jmp; pc: number };
+type JmpIfInstr = { readonly op: Opcode.JmpIf; readonly pc: number };
+type JmpInstr = { readonly op: Opcode.Jmp; readonly pc: number };
+type DefGlobalInstr = { readonly op: Opcode.DefGlobal };
+type GetGlobalInstr = { readonly op: Opcode.GetGlobal; readonly index: number };
 
 export type SizedInstr = {
     readonly instr: Instr;
@@ -69,11 +75,20 @@ export function writeInstr(instr: Instr, data: number[]): SizedInstr {
             data.push(...bytes);
             return { instr, size: 5 };
         }
+
+        case Opcode.GetGlobal: {
+            const bytes = serializeNumber(instr.index);
+            data.push(...bytes);
+            return { instr, size: 5 };
+        }
+
         case Opcode.Push: {
             const bytes = serialize(instr.value);
             data.push(...bytes);
             return { instr, size: bytes.length + 1 };
         }
+
+        case Opcode.DefGlobal:
         case Opcode.Pop:
         case Opcode.Add:
         case Opcode.Sub:
@@ -82,6 +97,7 @@ export function writeInstr(instr: Instr, data: number[]): SizedInstr {
         case Opcode.Assert:
         case Opcode.Display:
             return { instr, size: 1 };
+
         default:
             cannot(instr);
     }
@@ -94,11 +110,19 @@ export function readInstr(bytes: DataView, at: number): SizedInstr {
             const { value, size } = deserialize(bytes, at + 1);
             return { instr: { op, value }, size: size + 1 };
         }
+
+        case Opcode.GetGlobal: {
+            const index = bytes.getInt32(at + 1);
+            return { instr: { op, index }, size: 5 };
+        }
+
         case Opcode.Jmp:
         case Opcode.JmpIf: {
             const pc = bytes.getInt32(at + 1);
             return { instr: { op, pc }, size: 5 };
         }
+
+        case Opcode.DefGlobal:
         case Opcode.Pop:
         case Opcode.Add:
         case Opcode.Sub:
@@ -107,6 +131,7 @@ export function readInstr(bytes: DataView, at: number): SizedInstr {
         case Opcode.Assert:
         case Opcode.Display:
             return { instr: { op }, size: 1 };
+
         default:
             throw new Error(`invalid opcode ${op} at byte ${at}`);
     }
@@ -125,5 +150,7 @@ export function printInstr(instr: Instr): string {
         case Opcode.Lt: return "lt";
         case Opcode.Assert: return "assert";
         case Opcode.Display: return "display";
+        case Opcode.DefGlobal: return `def_global`;
+        case Opcode.GetGlobal: return `get_global ${instr.index}`;
     }
 }

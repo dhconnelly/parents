@@ -1,7 +1,15 @@
 import { Expr, printExpr, Prog } from "../ast";
-import { serializeNumber, Type, Value } from "../values";
+import { serializeNumber, Type, Value, NilValue } from "../values";
 import { Instr, Opcode, writeInstr } from "../instr";
-import { RootError } from "../util";
+import { RootError, Option } from "../util";
+
+type Ref = GlobalRef;
+
+type GlobalRef = {
+    typ: "GlobalRef";
+    name: string;
+    index: number;
+};
 
 export class CompilerError extends RootError {
     constructor(message: string) {
@@ -23,9 +31,13 @@ function writeInt(into: number[], at: number, val: number) {
 
 class Compiler {
     bytes: number[];
+    globals: Map<string, number>;
+    nil: NilValue;
 
     constructor() {
         this.bytes = [];
+        this.globals = new Map();
+        this.nil = { typ: Type.NilType };
     }
 
     push(instr: Instr) {
@@ -48,6 +60,15 @@ class Compiler {
         }
     }
 
+    lookup(name: string): Ref {
+        // TODO: locals
+        const index = this.globals.get(name);
+        if (index === undefined) {
+            throw new CompilerError(`${name} is not defined`);
+        }
+        return { typ: "GlobalRef", name, index };
+    }
+
     compile(expr: Expr) {
         switch (expr.typ) {
             case "IntExpr":
@@ -63,6 +84,7 @@ class Compiler {
                     this.compile(arg);
                 }
                 if (expr.f.typ == "IdentExpr" && BUILT_INS.has(expr.f.value)) {
+                    // TODO: invoke functions properly so vm can check arity
                     this.compileBuiltIn(expr.f.value);
                 } else {
                     notImplemented(expr);
@@ -94,8 +116,25 @@ class Compiler {
                 break;
             }
 
-            case "DefineExpr":
             case "IdentExpr":
+                const ref = this.lookup(expr.value);
+                switch (ref.typ) {
+                    case "GlobalRef":
+                        this.push({ op: Opcode.GetGlobal, index: ref.index });
+                        break;
+                }
+                break;
+
+            case "DefineExpr":
+                if (this.globals.has(expr.name)) {
+                    throw new CompilerError(`${expr.name} already defined`);
+                }
+                this.compile(expr.binding);
+                this.globals.set(expr.name, this.globals.size);
+                this.push({ op: Opcode.DefGlobal });
+                this.pushValue(this.nil);
+                break;
+
             case "LambdaExpr":
             case "LetExpr":
                 notImplemented(expr);

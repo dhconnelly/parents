@@ -117,4 +117,37 @@ describe("compiler", function () {
         ];
         assert.deepStrictEqual(expected, instrs);
     });
+
+    it("compiles define", function () {
+        const instrs = compile("(define foo #f) (define bar 7)");
+        const expected: Instr[] = [
+            { op: Opcode.Push, value: { typ: Type.BoolType, value: false } },
+            { op: Opcode.DefGlobal },
+            { op: Opcode.Push, value: { typ: Type.NilType } },
+            { op: Opcode.Pop },
+            { op: Opcode.Push, value: { typ: Type.IntType, value: 7 } },
+            { op: Opcode.DefGlobal },
+            { op: Opcode.Push, value: { typ: Type.NilType } },
+            { op: Opcode.Pop },
+        ];
+        assert.deepStrictEqual(expected, instrs);
+    });
+
+    it("compiles global lookups", function () {
+        const instrs = compile("(define foo -7) (define bar #f) (display bar)");
+        const expected: Instr[] = [
+            { op: Opcode.Push, value: { typ: Type.IntType, value: -7 } },
+            { op: Opcode.DefGlobal },
+            { op: Opcode.Push, value: { typ: Type.NilType } },
+            { op: Opcode.Pop },
+            { op: Opcode.Push, value: { typ: Type.BoolType, value: false } },
+            { op: Opcode.DefGlobal },
+            { op: Opcode.Push, value: { typ: Type.NilType } },
+            { op: Opcode.Pop },
+            { op: Opcode.GetGlobal, index: 1 },
+            { op: Opcode.Display },
+            { op: Opcode.Pop },
+        ];
+        assert.deepStrictEqual(expected, instrs);
+    });
 });

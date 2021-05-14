@@ -13,11 +13,13 @@ class VM {
     pc: number;
     stack: Value[];
     debug: boolean;
+    globals: Value[];
 
     constructor(program: DataView, debug: boolean = false) {
         this.program = program;
         this.pc = 0;
         this.stack = [];
+        this.globals = [];
         this.debug = debug;
     }
 
@@ -121,6 +123,21 @@ class VM {
             case Opcode.Jmp:
                 this.pc = instr.pc;
                 break;
+
+            case Opcode.DefGlobal: {
+                this.globals.push(this.popStack());
+                this.pc += size;
+                break;
+            }
+
+            case Opcode.GetGlobal: {
+                if (instr.index >= this.globals.length) {
+                    throw new ExecutionError("invalid global reference");
+                }
+                this.stack.push(this.globals[instr.index]);
+                this.pc += size;
+                break;
+            }
 
             default:
                 const __fail: never = instr;

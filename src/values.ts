@@ -128,9 +128,11 @@ export function deserialize(view: DataView, at: number): SizedValue {
             return { value: { typ: Type.BoolType, value }, size: 2 };
         }
 
+        case Type.NilType:
+            return { value: { typ: Type.NilType }, size: 1 };
+
         case Type.BuiltInFnType:
         case Type.FnType:
-        case Type.NilType:
             throw new Error("not implemented");
         default:
             throw new ValueError(
@@ -157,9 +159,11 @@ export function serialize(value: Value): number[] {
             nums.push(value.value ? 1 : 0);
             break;
 
+        case Type.NilType:
+            break;
+
         case Type.BuiltInFnType:
         case Type.FnType:
-        case Type.NilType:
             throw new Error("not implemented");
     }
     return nums;
