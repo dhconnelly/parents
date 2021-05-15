@@ -5,7 +5,6 @@ import {
     Expr,
     IdentExpr,
     IfExpr,
-    LetExpr,
     SeqExpr,
     CallExpr,
     LambdaExpr,
@@ -147,14 +146,6 @@ export class Evaluator {
         return last || this.nil;
     }
 
-    evaluateLet(expr: LetExpr): Value {
-        this.pushScope();
-        this.define(expr.name, this.evaluate(expr.binding));
-        const val = this.evaluate(expr.body);
-        this.popScope();
-        return val;
-    }
-
     evaluateUserCall(f: FnValue, expr: CallExpr): Value {
         const args = expr.args.map((expr) => this.evaluate(expr));
         if (f.params.length !== args.length) {
@@ -210,8 +201,6 @@ export class Evaluator {
                     throw defineAtRootError(expr);
                 }
                 return this.define(expr.name, this.evaluate(expr.binding));
-            case "LetExpr":
-                return this.evaluateLet(expr);
             case "IdentExpr":
                 return this.lookup(expr);
             case "BoolExpr":

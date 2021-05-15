@@ -136,7 +136,6 @@ class Compiler {
                 break;
 
             case "LambdaExpr":
-            case "LetExpr":
                 notImplemented(expr);
                 break;
 

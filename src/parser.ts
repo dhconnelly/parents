@@ -7,7 +7,6 @@ import {
     IfExpr,
     IntExpr,
     LambdaExpr,
-    LetExpr,
     Prog,
     SeqExpr,
 } from "./ast";
@@ -97,7 +96,7 @@ class Parser {
         };
     }
 
-    let(): LetExpr {
+    let(): CallExpr {
         const tok = this.eat("lparen");
         this.eat("let");
         this.eat("lparen");
@@ -106,13 +105,19 @@ class Parser {
         this.eat("rparen");
         const body = this.expr();
         this.eat("rparen");
-        return {
+        const f: LambdaExpr = {
+            typ: "LambdaExpr",
             line: tok.line,
             col: tok.col,
-            typ: "LetExpr",
-            name,
-            binding,
-            body,
+            params: [name],
+            body: body,
+        };
+        return {
+            typ: "CallExpr",
+            f,
+            args: [binding],
+            col: tok.col,
+            line: tok.line,
         };
     }
 
