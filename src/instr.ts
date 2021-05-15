@@ -19,6 +19,9 @@ export enum Opcode {
     Jmp = 10,
     DefGlobal = 11,
     GetGlobal = 12,
+    MakeLambda = 13,
+    Call = 14,
+    Return = 15,
 }
 
 export type Instr =
@@ -33,7 +36,10 @@ export type Instr =
     | JmpIfInstr
     | JmpInstr
     | DefGlobalInstr
-    | GetGlobalInstr;
+    | GetGlobalInstr
+    | MakeLambdaInstr
+    | CallInstr
+    | ReturnInstr;
 
 type PushInstr = { readonly op: Opcode.Push; readonly value: Value };
 type PopInstr = { readonly op: Opcode.Pop };
@@ -47,6 +53,12 @@ type JmpIfInstr = { readonly op: Opcode.JmpIf; readonly pc: number };
 type JmpInstr = { readonly op: Opcode.Jmp; readonly pc: number };
 type DefGlobalInstr = { readonly op: Opcode.DefGlobal };
 type GetGlobalInstr = { readonly op: Opcode.GetGlobal; readonly index: number };
+type MakeLambdaInstr = {
+    readonly op: Opcode.MakeLambda;
+    readonly arity: number;
+};
+type CallInstr = { readonly op: Opcode.Call; readonly arity: number };
+type ReturnInstr = { readonly op: Opcode.Return };
 
 export type SizedInstr = {
     readonly instr: Instr;
@@ -88,6 +100,12 @@ export function writeInstr(instr: Instr, data: number[]): SizedInstr {
             return { instr, size: bytes.length + 1 };
         }
 
+        case Opcode.MakeLambda:
+        case Opcode.Call:
+            data.push(...serializeNumber(instr.arity));
+            return { instr, size: 5 };
+
+        case Opcode.Return:
         case Opcode.DefGlobal:
         case Opcode.Pop:
         case Opcode.Add:
@@ -122,6 +140,13 @@ export function readInstr(bytes: DataView, at: number): SizedInstr {
             return { instr: { op, pc }, size: 5 };
         }
 
+        case Opcode.Call:
+        case Opcode.MakeLambda: {
+            const arity = bytes.getInt32(at + 1);
+            return { instr: { op, arity }, size: 5 };
+        }
+
+        case Opcode.Return:
         case Opcode.DefGlobal:
         case Opcode.Pop:
         case Opcode.Add:
@@ -152,5 +177,11 @@ export function printInstr(instr: Instr): string {
         case Opcode.Display: return "display";
         case Opcode.DefGlobal: return `def_global`;
         case Opcode.GetGlobal: return `get_global ${instr.index}`;
+        case Opcode.MakeLambda: return `make_lambda arity=${instr.arity}`;
+        case Opcode.Call: return `call arity=${instr.arity}`;
+        case Opcode.Return: return "return";
+        default:
+            const __fail: never = instr;
+            throw new Error();
     }
 }

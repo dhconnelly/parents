@@ -32,12 +32,10 @@ function writeInt(into: number[], at: number, val: number) {
 class Compiler {
     bytes: number[];
     globals: Map<string, number>;
-    nil: NilValue;
 
     constructor() {
         this.bytes = [];
         this.globals = new Map();
-        this.nil = { typ: Type.NilType };
     }
 
     push(instr: Instr) {
@@ -79,17 +77,42 @@ class Compiler {
                 this.pushValue({ typ: Type.BoolType, value: expr.value });
                 break;
 
-            case "CallExpr":
+            case "CallExpr": {
+                // Push arguments
                 for (const arg of expr.args) {
                     this.compile(arg);
                 }
-                if (expr.f.typ == "IdentExpr" && BUILT_INS.has(expr.f.value)) {
-                    // TODO: invoke functions properly so vm can check arity
-                    this.compileBuiltIn(expr.f.value);
-                } else {
-                    notImplemented(expr);
-                }
+                // Resolve function
+                this.compile(expr.f);
+                // Call
+                this.push({ op: Opcode.Call, arity: expr.args.length });
                 break;
+            }
+
+            case "LambdaExpr": {
+                // jump over the function
+                this.push({ op: Opcode.Jmp, pc: 0 });
+                const jmp = this.bytes.length - 4;
+
+                // compile the function
+                const lambdaStart = this.bytes.length;
+                this.push({ op: Opcode.MakeLambda, arity: expr.params.length });
+                if (expr.name !== undefined) {
+                    // handle locals
+                }
+                for (const param of expr.params) {
+                    // handle locals
+                }
+                this.compile(expr.body);
+                this.push({ op: Opcode.Return });
+
+                // fix the jump target to land after the compiled function
+                writeInt(this.bytes, jmp, this.bytes.length);
+
+                // push the pointer onto the stack
+                this.pushValue({ typ: Type.IntType, value: lambdaStart });
+                break;
+            }
 
             case "IfExpr":
                 this.compile(expr.cond);
@@ -132,11 +155,6 @@ class Compiler {
                 this.compile(expr.binding);
                 this.globals.set(expr.name, this.globals.size);
                 this.push({ op: Opcode.DefGlobal });
-                this.pushValue(this.nil);
-                break;
-
-            case "LambdaExpr":
-                notImplemented(expr);
                 break;
 
             default:

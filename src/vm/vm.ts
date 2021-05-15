@@ -14,6 +14,7 @@ class VM {
     stack: Value[];
     debug: boolean;
     globals: Value[];
+    nil: Value;
 
     constructor(program: DataView, debug: boolean = false) {
         this.program = program;
@@ -21,6 +22,7 @@ class VM {
         this.stack = [];
         this.globals = [];
         this.debug = debug;
+        this.nil = { typ: Type.NilType };
     }
 
     error(message: string) {
@@ -126,8 +128,15 @@ class VM {
 
             case Opcode.DefGlobal: {
                 this.globals.push(this.popStack());
+                this.stack.push(this.nil);
                 this.pc += size;
                 break;
+            }
+
+            case Opcode.MakeLambda:
+            case Opcode.Return:
+            case Opcode.Call: {
+                throw new Error();
             }
 
             case Opcode.GetGlobal: {
