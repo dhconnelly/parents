@@ -38,11 +38,13 @@ class Compiler {
     bytes: number[];
     globals: Map<string, number>;
     locals: Map<string, number>[];
+    captures: StackRef[][];
 
     constructor() {
         this.bytes = [];
         this.locals = [];
         this.globals = new Map(Object.entries(BUILT_INS));
+        this.captures = [];
     }
 
     push(instr: Instr) {
@@ -109,23 +111,36 @@ class Compiler {
 
                 // compile the function
                 const lambdaStart = this.bytes.length;
-                this.push({ op: Opcode.MakeLambda, arity: expr.params.length });
                 this.locals.push(new Map());
-                if (expr.name !== undefined) {
-                    // handle name
-                }
+                this.captures.push([]);
+                this.locals[this.locals.length - 1].set(
+                    expr.name || "",
+                    this.locals.length - 1
+                );
                 for (let i = 0; i < expr.params.length; i++) {
                     this.locals[this.locals.length - 1].set(expr.params[i], i);
                 }
                 this.compile(expr.body);
                 this.push({ op: Opcode.Return });
-                this.locals.pop();
 
                 // fix the jump target to land after the compiled function
                 writeInt(this.bytes, jmp, this.bytes.length);
 
-                // push the pointer onto the stack
-                this.pushValue({ typ: Type.IntType, value: lambdaStart });
+                // push the lambda onto the heap
+                for (const { frameDist, index } of this.captures[
+                    this.captures.length - 1
+                ]) {
+                    this.push({ op: Opcode.GetStack, frameDist, index });
+                }
+                this.push({
+                    op: Opcode.MakeLambda,
+                    pc: lambdaStart,
+                    arity: expr.params.length,
+                    captures: this.captures[this.captures.length - 1].length,
+                });
+
+                this.captures.pop();
+                this.locals.pop();
                 break;
             }
 
@@ -150,11 +165,24 @@ class Compiler {
                         this.push({ op: Opcode.GetGlobal, index: ref.index });
                         break;
                     case "StackRef":
-                        this.push({
-                            op: Opcode.GetStack,
-                            frameDist: ref.frameDist,
-                            index: ref.index,
-                        });
+                        const { frameDist, index } = ref;
+                        if (frameDist === 0) {
+                            this.push({
+                                op: Opcode.GetStack,
+                                frameDist,
+                                index,
+                            });
+                        } else {
+                            const top = this.locals[this.locals.length - 1];
+                            const localIndex = top.size;
+                            top.set(ref.name, localIndex);
+                            this.push({
+                                op: Opcode.GetStack,
+                                frameDist: 0,
+                                index: localIndex,
+                            });
+                            this.captures[this.captures.length - 1].push(ref);
+                        }
                         break;
                     default:
                         const __fail: never = ref;

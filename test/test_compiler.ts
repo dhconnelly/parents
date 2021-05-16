@@ -161,12 +161,11 @@ describe("compiler", function () {
         const instrs = compile("(lambda () 10)");
         // prettier-ignore
         const expected: Instr[] = [
-        /*  0 */ { op: Opcode.Jmp, pc: 17 },
-        /*  5 */ { op: Opcode.MakeLambda, arity: 0 },
-        /* 10 */ { op: Opcode.Push, value: { typ: Type.IntType, value: 10 } },
-        /* 16 */ { op: Opcode.Return },
-        /* 17 */ { op: Opcode.Push, value: { typ: Type.IntType, value: 5 } },
-        /* 23 */ { op: Opcode.Pop },
+        /*  0 */ { op: Opcode.Jmp, pc: 12 },
+        /*  5 */ { op: Opcode.Push, value: { typ: Type.IntType, value: 10 } },
+        /* 11 */ { op: Opcode.Return },
+        /* 12 */ { op: Opcode.MakeLambda, pc: 5, arity: 0, captures: 0 },
+        /* 25 */ { op: Opcode.Pop },
         ];
         assert.deepStrictEqual(instrs, expected);
     });
@@ -175,13 +174,12 @@ describe("compiler", function () {
         const instrs = compile("((lambda () 10))");
         // prettier-ignore
         const expected: Instr[] = [
-        /*  0 */ { op: Opcode.Jmp, pc: 17 },
-        /*  5 */ { op: Opcode.MakeLambda, arity: 0 },
-        /* 10 */ { op: Opcode.Push, value: { typ: Type.IntType, value: 10 } },
-        /* 16 */ { op: Opcode.Return },
-        /* 17 */ { op: Opcode.Push, value: { typ: Type.IntType, value: 5 } },
-        /* 23 */ { op: Opcode.Call, arity: 0 },
-        /* 28 */ { op: Opcode.Pop },
+        /*  0 */ { op: Opcode.Jmp, pc: 12 },
+        /*  5 */ { op: Opcode.Push, value: { typ: Type.IntType, value: 10 } },
+        /* 11 */ { op: Opcode.Return },
+        /* 12 */ { op: Opcode.MakeLambda, pc: 5, arity: 0, captures: 0 },
+        /* 25 */ { op: Opcode.Call, arity: 0 },
+        /* 30 */ { op: Opcode.Pop },
         ];
         assert.deepStrictEqual(instrs, expected);
     });
@@ -190,16 +188,15 @@ describe("compiler", function () {
         const instrs = compile("(define f (lambda () 10)) (f)");
         // prettier-ignore
         const expected: Instr[] = [
-        /*  0 */ { op: Opcode.Jmp, pc: 17 },
-        /*  5 */ { op: Opcode.MakeLambda, arity: 0 },
+        /*  0 */ { op: Opcode.Jmp, pc: 12 },
         /* 10 */ { op: Opcode.Push, value: { typ: Type.IntType, value: 10 } },
-        /* 16 */ { op: Opcode.Return },
-        /* 17 */ { op: Opcode.Push, value: { typ: Type.IntType, value: 5 } },
-        /* 23 */ { op: Opcode.DefGlobal },
-        /* 24 */ { op: Opcode.Pop },
-        /* 25 */ { op: Opcode.GetGlobal, index: NUM_BUILT_INS},
-        /* 30 */ { op: Opcode.Call, arity: 0 },
-        /* 35 */ { op: Opcode.Pop },
+        /* 11 */ { op: Opcode.Return },
+        /* 12 */ { op: Opcode.MakeLambda, pc: 5, arity: 0, captures: 0 },
+        /* 25 */ { op: Opcode.DefGlobal },
+        /* 26 */ { op: Opcode.Pop },
+        /* 27 */ { op: Opcode.GetGlobal, index: NUM_BUILT_INS},
+        /* 32 */ { op: Opcode.Call, arity: 0 },
+        /* 37 */ { op: Opcode.Pop },
         ];
         assert.deepStrictEqual(instrs, expected);
     });
@@ -208,12 +205,11 @@ describe("compiler", function () {
         const instrs = compile("(lambda (x) x)");
         // prettier-ignore
         const expected: Instr[] = [
-        /*  0 */ { op: Opcode.Jmp, pc: 20 },
-        /*  5 */ { op: Opcode.MakeLambda, arity: 1 },
-        /* 10 */ { op: Opcode.GetStack, frameDist: 0, index: 0 },
-        /* 19 */ { op: Opcode.Return },
-        /* 20 */ { op: Opcode.Push, value: { typ: Type.IntType, value: 5 } },
-        /* 26 */ { op: Opcode.Pop },
+        /*  0 */ { op: Opcode.Jmp, pc: 15 },
+        /*  5 */ { op: Opcode.GetStack, frameDist: 0, index: 0 },
+        /* 14 */ { op: Opcode.Return },
+        /* 12 */ { op: Opcode.MakeLambda, pc: 5, arity: 1, captures: 0 },
+        /* 25 */ { op: Opcode.Pop },
         ];
         assert.deepStrictEqual(instrs, expected);
     });
@@ -222,20 +218,19 @@ describe("compiler", function () {
         const instrs = compile("(define (f x) x) (define x 3) (f x)");
         // prettier-ignore
         const expected: Instr[] = [
-        /*  0 */ { op: Opcode.Jmp, pc: 20 },
-        /*  5 */ { op: Opcode.MakeLambda, arity: 1 },
-        /* 10 */ { op: Opcode.GetStack, frameDist: 0, index: 0 },
-        /* 19 */ { op: Opcode.Return },
-        /* 20 */ { op: Opcode.Push, value: { typ: Type.IntType, value: 5 } },
-        /* 26 */ { op: Opcode.DefGlobal },
-        /* 27 */ { op: Opcode.Pop },
-        /* 28 */ { op: Opcode.Push, value: { typ: Type.IntType, value: 3 }},
-        /* 34 */ { op: Opcode.DefGlobal },
-        /* 35 */ { op: Opcode.Pop },
-        /* 36 */ { op: Opcode.GetGlobal, index: NUM_BUILT_INS + 1 },
-        /* 41 */ { op: Opcode.GetGlobal, index: NUM_BUILT_INS + 0 },
-        /* 46 */ { op: Opcode.Call, arity: 1 },
-        /* 51 */ { op: Opcode.Pop },
+        /*  0 */ { op: Opcode.Jmp, pc: 15 },
+        /*  5 */ { op: Opcode.GetStack, frameDist: 0, index: 0 },
+        /* 14 */ { op: Opcode.Return },
+        /* 15 */ { op: Opcode.MakeLambda, pc: 5, arity: 1, captures: 0 },
+        /* 28 */ { op: Opcode.DefGlobal },
+        /* 29 */ { op: Opcode.Pop },
+        /* 30 */ { op: Opcode.Push, value: { typ: Type.IntType, value: 3 }},
+        /* 36 */ { op: Opcode.DefGlobal },
+        /* 37 */ { op: Opcode.Pop },
+        /* 38 */ { op: Opcode.GetGlobal, index: NUM_BUILT_INS + 1 },
+        /* 43 */ { op: Opcode.GetGlobal, index: NUM_BUILT_INS + 0 },
+        /* 48 */ { op: Opcode.Call, arity: 1 },
+        /* 53 */ { op: Opcode.Pop },
         ];
         assert.deepStrictEqual(instrs, expected);
     });
@@ -245,13 +240,12 @@ describe("compiler", function () {
         // prettier-ignore
         const expected: Instr[] = [
         /*  0 */ { op: Opcode.Push, value: { typ: Type.IntType, value: 3 } },
-        /*  6 */ { op: Opcode.Jmp, pc: 26 },
-        /* 11 */ { op: Opcode.MakeLambda, arity: 1 },
-        /* 16 */ { op: Opcode.GetStack, frameDist: 0, index: 0 },
-        /* 25 */ { op: Opcode.Return },
-        /* 26 */ { op: Opcode.Push, value: { typ: Type.IntType, value: 11 } },
-        /* 38 */ { op: Opcode.Call, arity: 1 },
-        /* 43 */ { op: Opcode.Pop },
+        /*  6 */ { op: Opcode.Jmp, pc: 21 },
+        /* 11 */ { op: Opcode.GetStack, frameDist: 0, index: 0 },
+        /* 20 */ { op: Opcode.Return },
+        /* 21 */ { op: Opcode.MakeLambda, pc: 11, arity: 1, captures: 0 },
+        /* 34 */ { op: Opcode.Call, arity: 1 },
+        /* 39 */ { op: Opcode.Pop },
         ];
         assert.deepStrictEqual(instrs, expected);
     });
@@ -260,43 +254,94 @@ describe("compiler", function () {
         const instrs = compile("(lambda (x) x)");
         // prettier-ignore
         const expected: Instr[] = [
-        /*  0 */ { op: Opcode.Jmp, pc: 20 },
-        /*  5 */ { op: Opcode.MakeLambda, arity: 1 },
-        /* 10 */ { op: Opcode.GetStack, frameDist: 0, index: 0 },
-        /* 19 */ { op: Opcode.Return },
-        /* 20 */ { op: Opcode.Push, value: { typ: Type.IntType, value: 5 } },
+        /*  0 */ { op: Opcode.Jmp, pc: 15 },
+        /*  5 */ { op: Opcode.GetStack, frameDist: 0, index: 0 },
+        /* 14 */ { op: Opcode.Return },
+        /* 15 */ { op: Opcode.MakeLambda, arity: 1, captures: 0, pc: 5 },
         /* 26 */ { op: Opcode.Pop },
         ];
         assert.deepStrictEqual(instrs, expected);
     });
 
     it("compiles global capture lambda with arg", function () {
-        const instrs = compile("(define z 3) (lambda foo (y) (+ y z)");
-        const expected: Instr[] = [];
+        const instrs = compile("(define z 3) (lambda foo (y) z)");
+        // prettier-ignore
+        const expected: Instr[] = [
+        /*  0 */ { op: Opcode.Push, value: { typ: Type.IntType, value: 3 } },
+        /*  6 */ { op: Opcode.DefGlobal },
+        /*  7 */ { op: Opcode.Pop },
+        /*  8 */ { op: Opcode.Jmp, pc: 19 },
+        /* 13 */ { op: Opcode.GetGlobal, index: NUM_BUILT_INS },
+        /* 18 */ { op: Opcode.Return },
+        /* 19 */ { op: Opcode.MakeLambda, arity: 1, captures: 0, pc: 13 },
+        /* 32 */ { op: Opcode.Pop },
+        ];
         assert.deepStrictEqual(instrs, expected);
     });
 
     it("compiles local capture lambda with arg", function () {
-        const instrs = compile("(let (z 5) (lambda foo (y) (+ y z)))");
-        const expected: Instr[] = [];
+        const instrs = compile("(lambda (x) (lambda (y) (+ x y)))");
+        // prettier-ignore
+        const expected: Instr[] = [
+        /*  0 */ { op: Opcode.Jmp, pc: 62 },
+        /*  5 */ { op: Opcode.Jmp, pc: 39 },
+        /* 10 */ { op: Opcode.GetStack,frameDist: 0, index: 2 },
+        /* 19 */ { op: Opcode.GetStack,frameDist: 0, index: 0 },
+        /* 28 */ { op: Opcode.GetGlobal, index: BUILT_INS["+"] },
+        /* 33 */ { op: Opcode.Call, arity: 2 },
+        /* 38 */ { op: Opcode.Return },
+        /* 39 */ { op: Opcode.GetStack, frameDist: 1, index: 0 },
+        /* 48 */ { op: Opcode.MakeLambda, arity: 1, captures: 1, pc: 10 },
+        /* 61 */ { op: Opcode.Return },
+        /* 62 */ { op: Opcode.MakeLambda, arity: 1, captures: 0, pc: 5 },
+        /* 75 */ { op: Opcode.Pop },
+        ];
         assert.deepStrictEqual(instrs, expected);
     });
 
-    it("calls local lambda with arg and captures", function () {
-        const instrs = compile(
-            "(let (x 1) (let (f (lambda (y) (+ y x))) (f 3)))"
-        );
-        const expected: Instr[] = [];
+    it("calls local capture lambda with arg", function () {
+        const instrs = compile("((lambda (x) ((lambda (y) (+ x y)) 5)) 7)");
+        // prettier-ignore
+        const expected: Instr[] = [
+            /*  0 */ { op: Opcode.Push, value: { typ: Type.IntType, value: 7 } },
+            /*  6 */ { op: Opcode.Jmp, pc: 79 },
+            /* 11 */ { op: Opcode.Push, value: { typ: Type.IntType, value: 5 } },
+            /* 17 */ { op: Opcode.Jmp, pc: 51 },
+            /* 22 */ { op: Opcode.GetStack, frameDist: 0, index: 2 },
+            /* 27 */ { op: Opcode.GetStack, frameDist: 0, index: 0 },
+            /* 40 */ { op: Opcode.GetGlobal, index: BUILT_INS["+"] },
+            /* 45 */ { op: Opcode.Call, arity: 2 },
+            /* 50 */ { op: Opcode.Return },
+            /* 51 */ { op: Opcode.GetStack, frameDist: 1, index: 0 },
+            /* 60 */ { op: Opcode.MakeLambda, arity: 1, captures: 1, pc: 22 },
+            /* 73 */ { op: Opcode.Call, arity: 1 },
+            /* 78 */ { op: Opcode.Return },
+            /* 79 */ { op: Opcode.MakeLambda, arity: 1, captures: 0, pc: 11 },
+            /* 92 */ { op: Opcode.Call, arity: 1 },
+            /* 97 */ { op: Opcode.Pop },
+        ];
         assert.deepStrictEqual(instrs, expected);
     });
 
-    it("compiles multiple arguments with captures", function () {
-        const instrs = compile(
-            `((let (x 2)
-                  (lambda (y z) (+ x (+ y z))))
-              4 3)`
-        );
-        const expected: Instr[] = [];
+    it("compiles higher order functions", function () {
+        const instrs = compile("((lambda (f) (f 1)) (lambda (x) (+ x 1)))");
+        const expected: Instr[] = [
+            { op: Opcode.Jmp, pc: 31 },
+            { op: Opcode.GetStack, frameDist: 0, index: 0 },
+            { op: Opcode.Push, value: { typ: Type.IntType, value: 1 } },
+            { op: Opcode.GetGlobal, index: BUILT_INS["+"] },
+            { op: Opcode.Call, arity: 2 },
+            { op: Opcode.Return },
+            { op: Opcode.MakeLambda, pc: 5, arity: 1, captures: 0 },
+            { op: Opcode.Jmp, pc: 70 },
+            { op: Opcode.Push, value: { typ: Type.IntType, value: 1 } },
+            { op: Opcode.GetStack, frameDist: 0, index: 0 },
+            { op: Opcode.Call, arity: 1 },
+            { op: Opcode.Return },
+            { op: Opcode.MakeLambda, pc: 49, arity: 1, captures: 0 },
+            { op: Opcode.Call, arity: 1 },
+            { op: Opcode.Pop },
+        ];
         assert.deepStrictEqual(instrs, expected);
     });
 
@@ -308,7 +353,33 @@ describe("compiler", function () {
                     (+ n (sum (- n 1)))))
             (sum 3)
         `);
-        const expected: Instr[] = [];
+        const expected: Instr[] = [
+            { op: Opcode.Jmp, pc: 105 },
+            { op: Opcode.GetStack, frameDist: 0, index: 0 },
+            { op: Opcode.Push, value: { typ: Type.IntType, value: 0 } },
+            { op: Opcode.GetGlobal, index: BUILT_INS["="] },
+            { op: Opcode.Call, arity: 2 },
+            { op: Opcode.JmpIf, pc: 98 },
+            { op: Opcode.GetStack, frameDist: 0, index: 0 },
+            { op: Opcode.GetStack, frameDist: 0, index: 0 },
+            { op: Opcode.Push, value: { typ: Type.IntType, value: 1 } },
+            { op: Opcode.GetGlobal, index: BUILT_INS["-"] },
+            { op: Opcode.Call, arity: 2 },
+            { op: Opcode.GetStack, frameDist: 0, index: 0 },
+            { op: Opcode.Call, arity: 1 },
+            { op: Opcode.GetGlobal, index: BUILT_INS["+"] },
+            { op: Opcode.Call, arity: 2 },
+            { op: Opcode.Jmp, pc: 104 },
+            { op: Opcode.Push, value: { typ: Type.IntType, value: 0 } },
+            { op: Opcode.Return },
+            { op: Opcode.MakeLambda, pc: 5, arity: 1, captures: 0 },
+            { op: Opcode.DefGlobal },
+            { op: Opcode.Pop },
+            { op: Opcode.Push, value: { typ: Type.IntType, value: 3 } },
+            { op: Opcode.GetGlobal, index: NUM_BUILT_INS },
+            { op: Opcode.Call, arity: 1 },
+            { op: Opcode.Pop },
+        ];
         assert.deepStrictEqual(instrs, expected);
     });
 });

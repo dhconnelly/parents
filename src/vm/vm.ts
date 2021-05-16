@@ -133,8 +133,9 @@ class VM {
                 break;
             }
 
-            case Opcode.GetStack:
             case Opcode.MakeLambda:
+            case Opcode.GetStack:
+            case Opcode.StartLambda:
             case Opcode.Return:
             case Opcode.Call: {
                 throw new Error();

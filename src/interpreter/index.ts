@@ -1,14 +1,15 @@
 import { readFileSync } from "fs";
-import { Ok } from "src/util";
 
 import { lex } from "../lexer";
 import { parse } from "../parser";
 import { evaluate } from "./evaluator";
+import { Ok } from "../util";
 
 export function runFile(file: string) {
     console.log(`> running ${file}`);
     try {
-        lex(readFileSync(file, "utf8"))
+        Ok(readFileSync(file, "utf8"))
+            .flatMap(lex)
             .flatMap(parse)
             .flatMap(evaluate)
             .unwrap();

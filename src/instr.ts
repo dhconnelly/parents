@@ -29,10 +29,11 @@ export enum Opcode {
     Jmp = 10,
     DefGlobal = 11,
     GetGlobal = 12,
-    MakeLambda = 13,
+    StartLambda = 13,
     Call = 14,
     Return = 15,
     GetStack = 16,
+    MakeLambda = 17,
 }
 
 export type Instr =
@@ -48,10 +49,11 @@ export type Instr =
     | JmpInstr
     | DefGlobalInstr
     | GetGlobalInstr
-    | MakeLambdaInstr
+    | StartLambdaInstr
     | CallInstr
     | ReturnInstr
-    | GetStackInstr;
+    | GetStackInstr
+    | MakeLambdaInstr;
 
 type PushInstr = { readonly op: Opcode.Push; readonly value: Value };
 type PopInstr = { readonly op: Opcode.Pop };
@@ -65,8 +67,8 @@ type JmpIfInstr = { readonly op: Opcode.JmpIf; readonly pc: number };
 type JmpInstr = { readonly op: Opcode.Jmp; readonly pc: number };
 type DefGlobalInstr = { readonly op: Opcode.DefGlobal };
 type GetGlobalInstr = { readonly op: Opcode.GetGlobal; readonly index: number };
-type MakeLambdaInstr = {
-    readonly op: Opcode.MakeLambda;
+type StartLambdaInstr = {
+    readonly op: Opcode.StartLambda;
     readonly arity: number;
 };
 type CallInstr = { readonly op: Opcode.Call; readonly arity: number };
@@ -75,6 +77,12 @@ type GetStackInstr = {
     readonly op: Opcode.GetStack;
     readonly frameDist: number;
     readonly index: number;
+};
+type MakeLambdaInstr = {
+    readonly op: Opcode.MakeLambda;
+    readonly pc: number;
+    readonly arity: number;
+    readonly captures: number;
 };
 
 export type SizedInstr = {
@@ -123,7 +131,7 @@ export function writeInstr(instr: Instr, data: number[]): SizedInstr {
             return { instr, size: bytes.length + 1 };
         }
 
-        case Opcode.MakeLambda:
+        case Opcode.StartLambda:
         case Opcode.Call:
             data.push(...serializeNumber(instr.arity));
             return { instr, size: 5 };
@@ -138,6 +146,13 @@ export function writeInstr(instr: Instr, data: number[]): SizedInstr {
         case Opcode.Assert:
         case Opcode.Display:
             return { instr, size: 1 };
+
+        case Opcode.MakeLambda: {
+            data.push(...serializeNumber(instr.pc));
+            data.push(...serializeNumber(instr.arity));
+            data.push(...serializeNumber(instr.captures));
+            return { instr, size: 13 };
+        }
 
         default:
             cannot(instr);
@@ -164,7 +179,7 @@ export function readInstr(bytes: DataView, at: number): SizedInstr {
         }
 
         case Opcode.Call:
-        case Opcode.MakeLambda: {
+        case Opcode.StartLambda: {
             const arity = bytes.getInt32(at + 1);
             return { instr: { op, arity }, size: 5 };
         }
@@ -173,6 +188,13 @@ export function readInstr(bytes: DataView, at: number): SizedInstr {
             const frameDist = bytes.getInt32(at + 1);
             const index = bytes.getInt32(at + 5);
             return { instr: { op, frameDist, index }, size: 9 };
+        }
+
+        case Opcode.MakeLambda: {
+            const pc = bytes.getInt32(at + 1);
+            const arity = bytes.getInt32(at + 5);
+            const captures = bytes.getInt32(at + 9);
+            return { instr: { op, pc, arity, captures }, size: 13 };
         }
 
         case Opcode.Return:
@@ -206,11 +228,13 @@ export function printInstr(instr: Instr): string {
         case Opcode.Display: return "display";
         case Opcode.DefGlobal: return `def_global`;
         case Opcode.GetGlobal: return `get_global ${instr.index}`;
-        case Opcode.MakeLambda: return `make_lambda arity=${instr.arity}`;
+        case Opcode.StartLambda: return `make_lambda arity=${instr.arity}`;
         case Opcode.Call: return `call arity=${instr.arity}`;
         case Opcode.Return: return "return";
         case Opcode.GetStack:
             return `get_stack frame=${instr.frameDist} index=${instr.index}`;
+        case Opcode.MakeLambda:
+            return `make_lambda pc=${instr.pc} arity=${instr.arity} captures=${instr.captures}`;
         default:
             const __fail: never = instr;
             throw new Error();
