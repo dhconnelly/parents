@@ -1,7 +1,7 @@
 import { describe, it } from "mocha";
 import assert from "assert";
 
-import { Instr, Opcode } from "../src/instr";
+import { Instr, Opcode, BUILT_INS, NUM_BUILT_INS } from "../src/instr";
 import { compile as compileAST } from "../src/compiler/compiler";
 import { parse } from "../src/parser";
 import { Type } from "../src/values";
@@ -50,7 +50,8 @@ describe("compiler", function () {
         const expected: Instr[] = [
             { op: Opcode.Push, value: { typ: Type.IntType, value: 11 } },
             { op: Opcode.Push, value: { typ: Type.IntType, value: 11 } },
-            { op: Opcode.Eq },
+            { op: Opcode.GetGlobal, index: BUILT_INS["="] },
+            { op: Opcode.Call, arity: 2 },
             { op: Opcode.Pop },
         ];
         assert.deepStrictEqual(instrs, expected);
@@ -61,7 +62,8 @@ describe("compiler", function () {
         const expected: Instr[] = [
             { op: Opcode.Push, value: { typ: Type.IntType, value: 9 } },
             { op: Opcode.Push, value: { typ: Type.IntType, value: 4 } },
-            { op: Opcode.Lt },
+            { op: Opcode.GetGlobal, index: BUILT_INS["<"] },
+            { op: Opcode.Call, arity: 2 },
             { op: Opcode.Pop },
         ];
         assert.deepStrictEqual(instrs, expected);
@@ -72,7 +74,8 @@ describe("compiler", function () {
         const expected: Instr[] = [
             { op: Opcode.Push, value: { typ: Type.IntType, value: 7 } },
             { op: Opcode.Push, value: { typ: Type.IntType, value: 10 } },
-            { op: Opcode.Sub },
+            { op: Opcode.GetGlobal, index: BUILT_INS["-"] },
+            { op: Opcode.Call, arity: 2 },
             { op: Opcode.Pop },
         ];
         assert.deepStrictEqual(instrs, expected);
@@ -83,7 +86,8 @@ describe("compiler", function () {
         const expected: Instr[] = [
             { op: Opcode.Push, value: { typ: Type.IntType, value: 5 } },
             { op: Opcode.Push, value: { typ: Type.IntType, value: 10 } },
-            { op: Opcode.Add },
+            { op: Opcode.GetGlobal, index: BUILT_INS["+"] },
+            { op: Opcode.Call, arity: 2 },
             { op: Opcode.Pop },
         ];
         assert.deepStrictEqual(instrs, expected);
@@ -93,7 +97,8 @@ describe("compiler", function () {
         const instrs = compile("(assert #f)");
         const expected: Instr[] = [
             { op: Opcode.Push, value: { typ: Type.BoolType, value: false } },
-            { op: Opcode.Assert },
+            { op: Opcode.GetGlobal, index: BUILT_INS["assert"] },
+            { op: Opcode.Call, arity: 1 },
             { op: Opcode.Pop },
         ];
         assert.deepStrictEqual(instrs, expected);
@@ -103,7 +108,8 @@ describe("compiler", function () {
         const instrs = compile("(display -42)");
         const expected: Instr[] = [
             { op: Opcode.Push, value: { typ: Type.IntType, value: -42 } },
-            { op: Opcode.Display },
+            { op: Opcode.GetGlobal, index: BUILT_INS["display"] },
+            { op: Opcode.Call, arity: 1 },
             { op: Opcode.Pop },
         ];
         assert.deepStrictEqual(instrs, expected);
@@ -145,7 +151,7 @@ describe("compiler", function () {
             { op: Opcode.Push, value: { typ: Type.BoolType, value: false } },
             { op: Opcode.DefGlobal },
             { op: Opcode.Pop },
-            { op: Opcode.GetGlobal, index: 1 },
+            { op: Opcode.GetGlobal, index: NUM_BUILT_INS + 1 },
             { op: Opcode.Pop },
         ];
         assert.deepStrictEqual(instrs, expected);
@@ -191,7 +197,7 @@ describe("compiler", function () {
         /* 17 */ { op: Opcode.Push, value: { typ: Type.IntType, value: 5 } },
         /* 23 */ { op: Opcode.DefGlobal },
         /* 24 */ { op: Opcode.Pop },
-        /* 25 */ { op: Opcode.GetGlobal, index: 0 },
+        /* 25 */ { op: Opcode.GetGlobal, index: NUM_BUILT_INS},
         /* 30 */ { op: Opcode.Call, arity: 0 },
         /* 35 */ { op: Opcode.Pop },
         ];
@@ -226,8 +232,8 @@ describe("compiler", function () {
         /* 28 */ { op: Opcode.Push, value: { typ: Type.IntType, value: 3 }},
         /* 34 */ { op: Opcode.DefGlobal },
         /* 35 */ { op: Opcode.Pop },
-        /* 36 */ { op: Opcode.GetGlobal, index: 1 },
-        /* 41 */ { op: Opcode.GetGlobal, index: 0 },
+        /* 36 */ { op: Opcode.GetGlobal, index: NUM_BUILT_INS + 1 },
+        /* 41 */ { op: Opcode.GetGlobal, index: NUM_BUILT_INS + 0 },
         /* 46 */ { op: Opcode.Call, arity: 1 },
         /* 51 */ { op: Opcode.Pop },
         ];
@@ -265,13 +271,13 @@ describe("compiler", function () {
     });
 
     it("compiles global capture lambda with arg", function () {
-        const instrs = compile("(define z 3) (lambda foo (y) (* y z)");
+        const instrs = compile("(define z 3) (lambda foo (y) (+ y z)");
         const expected: Instr[] = [];
         assert.deepStrictEqual(instrs, expected);
     });
 
     it("compiles local capture lambda with arg", function () {
-        const instrs = compile("(let (z 5) (lambda foo (y) (* y z)))");
+        const instrs = compile("(let (z 5) (lambda foo (y) (+ y z)))");
         const expected: Instr[] = [];
         assert.deepStrictEqual(instrs, expected);
     });
@@ -287,7 +293,7 @@ describe("compiler", function () {
     it("compiles multiple arguments with captures", function () {
         const instrs = compile(
             `((let (x 2)
-                  (lambda (y z) (* x (+ y z))))
+                  (lambda (y z) (+ x (+ y z))))
               4 3)`
         );
         const expected: Instr[] = [];

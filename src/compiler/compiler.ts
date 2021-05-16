@@ -1,6 +1,6 @@
 import { Expr, printExpr, Prog } from "../ast";
 import { serializeNumber, Type, Value } from "../values";
-import { Instr, Opcode, writeInstr } from "../instr";
+import { Instr, Opcode, writeInstr, BUILT_INS } from "../instr";
 import { Result, Ok, Err } from "../util";
 
 type Ref = GlobalRef | StackRef;
@@ -28,8 +28,6 @@ function notImplemented(expr: Expr) {
     throw new Error(`not implemented: ${printExpr(expr)}`);
 }
 
-const BUILT_INS = new Set(["+", "-", "=", "<", "assert", "display"]);
-
 function writeInt(into: number[], at: number, val: number) {
     for (const b of serializeNumber(val)) {
         into[at++] = b;
@@ -43,8 +41,8 @@ class Compiler {
 
     constructor() {
         this.bytes = [];
-        this.globals = new Map();
         this.locals = [];
+        this.globals = new Map(Object.entries(BUILT_INS));
     }
 
     push(instr: Instr) {

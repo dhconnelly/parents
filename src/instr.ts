@@ -6,6 +6,16 @@ import {
     print,
 } from "./values";
 
+export const BUILT_INS = {
+    "+": 0,
+    "-": 1,
+    "<": 2,
+    "=": 3,
+    assert: 4,
+    display: 5,
+};
+export const NUM_BUILT_INS = Object.keys(BUILT_INS).length;
+
 export enum Opcode {
     Push = 1,
     Pop = 2,
