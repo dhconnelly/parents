@@ -10,3 +10,7 @@ export type RootError =
     | CompilerError
     | EvaluationError
     | ExecutionError;
+
+function liftError(err: RootError): RootError {
+    return err;
+}

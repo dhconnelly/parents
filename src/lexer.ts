@@ -1,6 +1,5 @@
-import { Option } from "./util";
+import { Option, Result, Ok, Err, hasValue } from "./util";
 import { Token, TokenType } from "./token";
-import { hasValue } from "./util";
 
 export class LexerError extends Error {
     constructor(message: string) {
@@ -174,12 +173,20 @@ class Lexer {
     }
 }
 
-export function lex(text: string): Token[] {
-    const lexer = new Lexer(text);
-    const toks = [];
-    while (!lexer.atEnd()) {
-        let maybe_tok = lexer.next();
-        if (maybe_tok) toks.push(maybe_tok);
+export function lex(text: string): Result<Token[], LexerError> {
+    try {
+        const lexer = new Lexer(text);
+        const toks = [];
+        while (!lexer.atEnd()) {
+            let maybe_tok = lexer.next();
+            if (maybe_tok) toks.push(maybe_tok);
+        }
+        return Ok(toks);
+    } catch (err) {
+        if (err instanceof LexerError) {
+            return Err(err);
+        } else {
+            throw err;
+        }
     }
-    return toks;
 }

@@ -10,7 +10,7 @@ import {
     Prog,
 } from "./ast";
 import { Token, TokenType } from "./token";
-import { Option } from "./util";
+import { Option, Result, Ok, Err } from "./util";
 
 export class ParserError extends Error {
     constructor(message: string) {
@@ -266,11 +266,19 @@ class Parser {
     }
 }
 
-export function parse(toks: Token[]): Prog {
-    const parser = new Parser(toks);
-    const exprs = [];
-    while (!parser.atEnd()) {
-        exprs.push(parser.expr());
+export function parse(toks: Token[]): Result<Prog, ParserError> {
+    try {
+        const parser = new Parser(toks);
+        const exprs = [];
+        while (!parser.atEnd()) {
+            exprs.push(parser.expr());
+        }
+        return Ok({ exprs });
+    } catch (err) {
+        if (err instanceof ParserError) {
+            return Err(err);
+        } else {
+            throw err;
+        }
     }
-    return { exprs };
 }

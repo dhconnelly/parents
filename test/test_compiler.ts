@@ -7,12 +7,17 @@ import { parse } from "../src/parser";
 import { Type } from "../src/values";
 import { disasm } from "../src/disasm/disasm";
 import { lex } from "../src/lexer";
+import { Ok } from "../src/util";
 
 function compile(text: string): Instr[] {
-    const toks = lex(text);
-    const prog = parse(toks);
-    const bytes = compileAST(prog);
-    return disasm(new DataView(bytes.buffer)).map((si) => si.instr);
+    return Ok(text)
+        .flatMap(lex)
+        .flatMap(parse)
+        .flatMap(compileAST)
+        .flatMap((bytes) =>
+            Ok(disasm(new DataView(bytes.buffer)).map((si) => si.instr))
+        )
+        .unwrap();
 }
 
 describe("compiler", function () {

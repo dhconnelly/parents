@@ -1,6 +1,7 @@
 import { Expr, printExpr, Prog } from "../ast";
-import { serializeNumber, Type, Value, NilValue } from "../values";
+import { serializeNumber, Type, Value } from "../values";
 import { Instr, Opcode, writeInstr } from "../instr";
+import { Result, Ok, Err } from "../util";
 
 type Ref = GlobalRef | StackRef;
 
@@ -182,10 +183,18 @@ class Compiler {
     }
 }
 
-export function compile(prog: Prog): Uint8Array {
-    const compiler = new Compiler();
-    for (const expr of prog.exprs) {
-        compiler.compileStmt(expr);
+export function compile(prog: Prog): Result<Uint8Array, CompilerError> {
+    try {
+        const compiler = new Compiler();
+        for (const expr of prog.exprs) {
+            compiler.compileStmt(expr);
+        }
+        return Ok(Uint8Array.from(compiler.bytes));
+    } catch (err) {
+        if (err instanceof CompilerError) {
+            return Err(err);
+        } else {
+            throw err;
+        }
     }
-    return Uint8Array.from(compiler.bytes);
 }

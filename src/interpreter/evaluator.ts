@@ -12,6 +12,7 @@ import {
     NilValue,
 } from "../values";
 import { Scope } from "./scope";
+import { Err, Ok, Result } from "../util";
 
 export class EvaluationError extends Error {
     constructor(message: string) {
@@ -196,10 +197,19 @@ export class Evaluator {
     }
 }
 
-export function evaluate(ast: Prog) {
-    const evaluator = new Evaluator();
-    installBuiltIns(evaluator);
-    for (const expr of ast.exprs) {
-        evaluator.evaluate(expr);
+export function evaluate(ast: Prog): Result<null, EvaluationError> {
+    try {
+        const evaluator = new Evaluator();
+        installBuiltIns(evaluator);
+        for (const expr of ast.exprs) {
+            evaluator.evaluate(expr);
+        }
+        return Ok(null);
+    } catch (err) {
+        if (err instanceof EvaluationError) {
+            return Err(err);
+        } else {
+            throw err;
+        }
     }
 }
