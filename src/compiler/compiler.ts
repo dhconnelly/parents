@@ -145,17 +145,6 @@ class Compiler {
                 writeInt(this.bytes, jmp2, pc2);
                 break;
 
-            case "SeqExpr": {
-                const exprs = expr.exprs;
-                if (exprs.length === 0) break;
-                this.compile(exprs[0]);
-                for (let i = 1; i < exprs.length; i++) {
-                    this.push({ op: Opcode.Pop });
-                    this.compile(exprs[i]);
-                }
-                break;
-            }
-
             case "IdentExpr":
                 const ref = this.lookup(expr.value);
                 switch (ref.typ) {

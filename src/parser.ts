@@ -8,7 +8,6 @@ import {
     IntExpr,
     LambdaExpr,
     Prog,
-    SeqExpr,
 } from "./ast";
 import { lex } from "./lexer";
 import { Token, TokenType } from "./token";
@@ -161,7 +160,7 @@ class Parser {
         };
     }
 
-    seq(): SeqExpr {
+    seq(): CallExpr {
         const tok = this.eat("lparen");
         this.eat("seq");
         const exprs: Expr[] = [];
@@ -169,7 +168,25 @@ class Parser {
             exprs.push(this.expr());
         }
         this.eat("rparen");
-        return { line: tok.line, col: tok.col, typ: "SeqExpr", exprs };
+        const f: LambdaExpr = {
+            typ: "LambdaExpr",
+            col: tok.col,
+            line: tok.line,
+            body: {
+                typ: "IdentExpr",
+                col: tok.col,
+                line: tok.line,
+                value: `x${exprs.length - 1}`,
+            },
+            params: exprs.map((_, i) => `x${i}`),
+        };
+        return {
+            typ: "CallExpr",
+            line: tok.line,
+            col: tok.col,
+            f,
+            args: exprs,
+        };
     }
 
     call(): CallExpr {

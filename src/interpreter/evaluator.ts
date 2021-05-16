@@ -1,14 +1,6 @@
 import { strict as assert } from "assert";
 
-import {
-    Prog,
-    Expr,
-    IdentExpr,
-    IfExpr,
-    SeqExpr,
-    CallExpr,
-    LambdaExpr,
-} from "../ast";
+import { Prog, Expr, IdentExpr, IfExpr, CallExpr, LambdaExpr } from "../ast";
 import { installBuiltIns } from "./builtins";
 import {
     Value,
@@ -136,16 +128,6 @@ export class Evaluator {
         return value;
     }
 
-    evaluateSeq(expr: SeqExpr): Value {
-        this.pushScope();
-        let last;
-        for (const e of expr.exprs) {
-            last = this.evaluate(e);
-        }
-        this.popScope();
-        return last || this.nil;
-    }
-
     evaluateUserCall(f: FnValue, expr: CallExpr): Value {
         const args = expr.args.map((expr) => this.evaluate(expr));
         if (f.params.length !== args.length) {
@@ -211,8 +193,6 @@ export class Evaluator {
                 return { typ: Type.IntType, value: expr.value };
             case "LambdaExpr":
                 return this.makeLambda(expr);
-            case "SeqExpr":
-                return this.evaluateSeq(expr);
         }
     }
 }
