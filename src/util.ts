@@ -1,9 +1,3 @@
-export class RootError extends Error {
-    constructor(message: string) {
-        super(message);
-    }
-}
-
 export type Option<T> = T | undefined;
 
 export function unwrap<T>(x: Option<T>): T {

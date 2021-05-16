@@ -1,8 +1,8 @@
 import { Type, Value, getInt, print, getBool } from "../values";
 import { Opcode, printInstr, readInstr } from "../instr";
-import { Option, RootError, unwrap } from "../util";
+import { Option, unwrap } from "../util";
 
-class ExecutionError extends RootError {
+export class ExecutionError extends Error {
     constructor(message: string) {
         super(message);
     }

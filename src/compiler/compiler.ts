@@ -1,7 +1,6 @@
 import { Expr, printExpr, Prog } from "../ast";
 import { serializeNumber, Type, Value, NilValue } from "../values";
 import { Instr, Opcode, writeInstr } from "../instr";
-import { RootError, Option } from "../util";
 
 type Ref = GlobalRef | StackRef;
 
@@ -18,7 +17,7 @@ type StackRef = {
     index: number;
 };
 
-export class CompilerError extends RootError {
+export class CompilerError extends Error {
     constructor(message: string) {
         super(message);
     }

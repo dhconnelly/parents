@@ -1,6 +1,5 @@
 import { Expr } from "./ast";
 import { Scope } from "./interpreter/scope";
-import { RootError } from "./util";
 
 export enum Type {
     NilType = 1,
@@ -22,7 +21,7 @@ function printType(typ: Type): string {
     }
 }
 
-class TypeCheckError extends RootError {
+class TypeCheckError extends Error {
     constructor(message: string) {
         super(message);
     }

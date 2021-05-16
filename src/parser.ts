@@ -9,11 +9,10 @@ import {
     LambdaExpr,
     Prog,
 } from "./ast";
-import { lex } from "./lexer";
 import { Token, TokenType } from "./token";
-import { Option, RootError } from "./util";
+import { Option } from "./util";
 
-export class ParserError extends RootError {
+export class ParserError extends Error {
     constructor(message: string) {
         super(message);
     }
