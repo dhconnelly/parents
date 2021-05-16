@@ -24,7 +24,7 @@ describe("compiler", function () {
             { op: Opcode.Push, value: { typ: Type.IntType, value: 15 } },
             { op: Opcode.Pop },
         ];
-        assert.deepStrictEqual(expected, instrs);
+        assert.deepStrictEqual(instrs, expected);
     });
 
     it("compiles booleans", function () {
@@ -35,7 +35,7 @@ describe("compiler", function () {
             { op: Opcode.Push, value: { typ: Type.BoolType, value: false } },
             { op: Opcode.Pop },
         ];
-        assert.deepStrictEqual(expected, instrs);
+        assert.deepStrictEqual(instrs, expected);
     });
 
     it("compiles =", function () {
@@ -46,7 +46,7 @@ describe("compiler", function () {
             { op: Opcode.Eq },
             { op: Opcode.Pop },
         ];
-        assert.deepStrictEqual(expected, instrs);
+        assert.deepStrictEqual(instrs, expected);
     });
 
     it("compiles <", function () {
@@ -57,7 +57,7 @@ describe("compiler", function () {
             { op: Opcode.Lt },
             { op: Opcode.Pop },
         ];
-        assert.deepStrictEqual(expected, instrs);
+        assert.deepStrictEqual(instrs, expected);
     });
 
     it("compiles -", function () {
@@ -68,7 +68,7 @@ describe("compiler", function () {
             { op: Opcode.Sub },
             { op: Opcode.Pop },
         ];
-        assert.deepStrictEqual(expected, instrs);
+        assert.deepStrictEqual(instrs, expected);
     });
 
     it("compiles +", function () {
@@ -79,7 +79,7 @@ describe("compiler", function () {
             { op: Opcode.Add },
             { op: Opcode.Pop },
         ];
-        assert.deepStrictEqual(expected, instrs);
+        assert.deepStrictEqual(instrs, expected);
     });
 
     it("compiles assert", function () {
@@ -89,7 +89,7 @@ describe("compiler", function () {
             { op: Opcode.Assert },
             { op: Opcode.Pop },
         ];
-        assert.deepStrictEqual(expected, instrs);
+        assert.deepStrictEqual(instrs, expected);
     });
 
     it("compiles display", function () {
@@ -99,7 +99,7 @@ describe("compiler", function () {
             { op: Opcode.Display },
             { op: Opcode.Pop },
         ];
-        assert.deepStrictEqual(expected, instrs);
+        assert.deepStrictEqual(instrs, expected);
     });
 
     it("compiles if", function () {
@@ -113,7 +113,7 @@ describe("compiler", function () {
         /* 19 */ { op: Opcode.Push, value: { typ: Type.IntType, value: 7 } },
         /* 25 */ { op: Opcode.Pop },
         ];
-        assert.deepStrictEqual(expected, instrs);
+        assert.deepStrictEqual(instrs, expected);
     });
 
     it("compiles define", function () {
@@ -126,7 +126,7 @@ describe("compiler", function () {
             { op: Opcode.DefGlobal },
             { op: Opcode.Pop },
         ];
-        assert.deepStrictEqual(expected, instrs);
+        assert.deepStrictEqual(instrs, expected);
     });
 
     it("compiles global lookups", function () {
@@ -141,7 +141,7 @@ describe("compiler", function () {
             { op: Opcode.GetGlobal, index: 1 },
             { op: Opcode.Pop },
         ];
-        assert.deepStrictEqual(expected, instrs);
+        assert.deepStrictEqual(instrs, expected);
     });
 
     it("compiles no-capture unnamed lambda with no params", function () {
@@ -155,7 +155,7 @@ describe("compiler", function () {
         /* 17 */ { op: Opcode.Push, value: { typ: Type.IntType, value: 5 } },
         /* 23 */ { op: Opcode.Pop },
         ];
-        assert.deepStrictEqual(expected, instrs);
+        assert.deepStrictEqual(instrs, expected);
     });
 
     it("calls no-capture unnamed lambda literal with no args", function () {
@@ -170,7 +170,7 @@ describe("compiler", function () {
         /* 23 */ { op: Opcode.Call, arity: 0 },
         /* 28 */ { op: Opcode.Pop },
         ];
-        assert.deepStrictEqual(expected, instrs);
+        assert.deepStrictEqual(instrs, expected);
     });
 
     it("calls no-capture unnamed lambda global with no args", function () {
@@ -188,45 +188,103 @@ describe("compiler", function () {
         /* 30 */ { op: Opcode.Call, arity: 0 },
         /* 35 */ { op: Opcode.Pop },
         ];
-        assert.deepStrictEqual(expected, instrs);
+        assert.deepStrictEqual(instrs, expected);
     });
 
-    it("compiles no-capture unnamed lambda", function () {
-        const instrs = compile("(lambda (x y) (+ x y))");
-        const expected: Instr[] = [];
-        assert.deepStrictEqual(expected, instrs);
+    it("compiles no-capture unnamed lambda with arg", function () {
+        const instrs = compile("(lambda (x) x)");
+        // prettier-ignore
+        const expected: Instr[] = [
+        /*  0 */ { op: Opcode.Jmp, pc: 20 },
+        /*  5 */ { op: Opcode.MakeLambda, arity: 1 },
+        /* 10 */ { op: Opcode.GetStack, frameDist: 0, index: 0 },
+        /* 19 */ { op: Opcode.Return },
+        /* 20 */ { op: Opcode.Push, value: { typ: Type.IntType, value: 5 } },
+        /* 26 */ { op: Opcode.Pop },
+        ];
+        assert.deepStrictEqual(instrs, expected);
     });
 
-    it("compiles no-capture named lambda", function () {
-        const instrs = compile("(lambda foo (y) (* y 2)");
-        const expected: Instr[] = [];
-        assert.deepStrictEqual(expected, instrs);
+    it("calls no-capture global lambda with arg", function () {
+        const instrs = compile("(define (f x) x) (define x 3) (f x)");
+        // prettier-ignore
+        const expected: Instr[] = [
+        /*  0 */ { op: Opcode.Jmp, pc: 20 },
+        /*  5 */ { op: Opcode.MakeLambda, arity: 1 },
+        /* 10 */ { op: Opcode.GetStack, frameDist: 0, index: 0 },
+        /* 19 */ { op: Opcode.Return },
+        /* 20 */ { op: Opcode.Push, value: { typ: Type.IntType, value: 5 } },
+        /* 26 */ { op: Opcode.DefGlobal },
+        /* 27 */ { op: Opcode.Pop },
+        /* 28 */ { op: Opcode.Push, value: { typ: Type.IntType, value: 3 }},
+        /* 34 */ { op: Opcode.DefGlobal },
+        /* 35 */ { op: Opcode.Pop },
+        /* 36 */ { op: Opcode.GetGlobal, index: 1 },
+        /* 41 */ { op: Opcode.GetGlobal, index: 0 },
+        /* 46 */ { op: Opcode.Call, arity: 1 },
+        /* 51 */ { op: Opcode.Pop },
+        ];
+        assert.deepStrictEqual(instrs, expected);
     });
 
-    it("calls no-capture global lambda with args", function () {
-        const instrs = compile("(define (f x) (x + 1)) (f 3)");
-        const expected: Instr[] = [];
-        assert.deepStrictEqual(expected, instrs);
+    it("calls no-capture literal lambda with arg", function () {
+        const instrs = compile("((lambda (x) x) 3)");
+        // prettier-ignore
+        const expected: Instr[] = [
+        /*  0 */ { op: Opcode.Push, value: { typ: Type.IntType, value: 3 } },
+        /*  6 */ { op: Opcode.Jmp, pc: 26 },
+        /* 11 */ { op: Opcode.MakeLambda, arity: 1 },
+        /* 16 */ { op: Opcode.GetStack, frameDist: 0, index: 0 },
+        /* 25 */ { op: Opcode.Return },
+        /* 26 */ { op: Opcode.Push, value: { typ: Type.IntType, value: 11 } },
+        /* 38 */ { op: Opcode.Call, arity: 1 },
+        /* 43 */ { op: Opcode.Pop },
+        ];
+        assert.deepStrictEqual(instrs, expected);
     });
 
-    it("compiles global capture lambda", function () {
+    it("compiles no-capture unnamed nested lambda with arg", function () {
+        const instrs = compile("(lambda (x) x)");
+        // prettier-ignore
+        const expected: Instr[] = [
+        /*  0 */ { op: Opcode.Jmp, pc: 20 },
+        /*  5 */ { op: Opcode.MakeLambda, arity: 1 },
+        /* 10 */ { op: Opcode.GetStack, frameDist: 0, index: 0 },
+        /* 19 */ { op: Opcode.Return },
+        /* 20 */ { op: Opcode.Push, value: { typ: Type.IntType, value: 5 } },
+        /* 26 */ { op: Opcode.Pop },
+        ];
+        assert.deepStrictEqual(instrs, expected);
+    });
+
+    it("compiles global capture lambda with arg", function () {
         const instrs = compile("(define z 3) (lambda foo (y) (* y z)");
         const expected: Instr[] = [];
-        assert.deepStrictEqual(expected, instrs);
+        assert.deepStrictEqual(instrs, expected);
     });
 
-    it("compiles local capture lambda", function () {
+    it("compiles local capture lambda with arg", function () {
         const instrs = compile("(let (z 5) (lambda foo (y) (* y z)))");
         const expected: Instr[] = [];
-        assert.deepStrictEqual(expected, instrs);
+        assert.deepStrictEqual(instrs, expected);
     });
 
-    it("calls local lambda with args and captures", function () {
+    it("calls local lambda with arg and captures", function () {
         const instrs = compile(
             "(let (x 1) (let (f (lambda (y) (+ y x))) (f 3)))"
         );
         const expected: Instr[] = [];
-        assert.deepStrictEqual(expected, instrs);
+        assert.deepStrictEqual(instrs, expected);
+    });
+
+    it("compiles multiple arguments with captures", function () {
+        const instrs = compile(
+            `((let (x 2)
+                  (lambda (y z) (* x (+ y z))))
+              4 3)`
+        );
+        const expected: Instr[] = [];
+        assert.deepStrictEqual(instrs, expected);
     });
 
     it("compiles recursive lambda", function () {
@@ -238,6 +296,6 @@ describe("compiler", function () {
             (sum 3)
         `);
         const expected: Instr[] = [];
-        assert.deepStrictEqual(expected, instrs);
+        assert.deepStrictEqual(instrs, expected);
     });
 });

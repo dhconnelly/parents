@@ -133,6 +133,7 @@ class VM {
                 break;
             }
 
+            case Opcode.GetStack:
             case Opcode.MakeLambda:
             case Opcode.Return:
             case Opcode.Call: {

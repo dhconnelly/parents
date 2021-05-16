@@ -22,6 +22,7 @@ export enum Opcode {
     MakeLambda = 13,
     Call = 14,
     Return = 15,
+    GetStack = 16,
 }
 
 export type Instr =
@@ -39,7 +40,8 @@ export type Instr =
     | GetGlobalInstr
     | MakeLambdaInstr
     | CallInstr
-    | ReturnInstr;
+    | ReturnInstr
+    | GetStackInstr;
 
 type PushInstr = { readonly op: Opcode.Push; readonly value: Value };
 type PopInstr = { readonly op: Opcode.Pop };
@@ -59,6 +61,11 @@ type MakeLambdaInstr = {
 };
 type CallInstr = { readonly op: Opcode.Call; readonly arity: number };
 type ReturnInstr = { readonly op: Opcode.Return };
+type GetStackInstr = {
+    readonly op: Opcode.GetStack;
+    readonly frameDist: number;
+    readonly index: number;
+};
 
 export type SizedInstr = {
     readonly instr: Instr;
@@ -85,6 +92,12 @@ export function writeInstr(instr: Instr, data: number[]): SizedInstr {
         case Opcode.JmpIf: {
             const bytes = serializeNumber(instr.pc);
             data.push(...bytes);
+            return { instr, size: 5 };
+        }
+
+        case Opcode.GetStack: {
+            data.push(...serializeNumber(instr.frameDist));
+            data.push(...serializeNumber(instr.index));
             return { instr, size: 5 };
         }
 
@@ -146,6 +159,12 @@ export function readInstr(bytes: DataView, at: number): SizedInstr {
             return { instr: { op, arity }, size: 5 };
         }
 
+        case Opcode.GetStack: {
+            const frameDist = bytes.getInt32(at + 1);
+            const index = bytes.getInt32(at + 5);
+            return { instr: { op, frameDist, index }, size: 9 };
+        }
+
         case Opcode.Return:
         case Opcode.DefGlobal:
         case Opcode.Pop:
@@ -180,6 +199,8 @@ export function printInstr(instr: Instr): string {
         case Opcode.MakeLambda: return `make_lambda arity=${instr.arity}`;
         case Opcode.Call: return `call arity=${instr.arity}`;
         case Opcode.Return: return "return";
+        case Opcode.GetStack:
+            return `get_stack frame=${instr.frameDist} index=${instr.index}`;
         default:
             const __fail: never = instr;
             throw new Error();

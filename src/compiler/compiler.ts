@@ -3,11 +3,18 @@ import { serializeNumber, Type, Value, NilValue } from "../values";
 import { Instr, Opcode, writeInstr } from "../instr";
 import { RootError, Option } from "../util";
 
-type Ref = GlobalRef;
+type Ref = GlobalRef | StackRef;
 
 type GlobalRef = {
     typ: "GlobalRef";
     name: string;
+    index: number;
+};
+
+type StackRef = {
+    typ: "StackRef";
+    name: string;
+    frameDist: number;
     index: number;
 };
 
@@ -32,10 +39,12 @@ function writeInt(into: number[], at: number, val: number) {
 class Compiler {
     bytes: number[];
     globals: Map<string, number>;
+    locals: Map<string, number>[];
 
     constructor() {
         this.bytes = [];
         this.globals = new Map();
+        this.locals = [];
     }
 
     push(instr: Instr) {
@@ -59,7 +68,13 @@ class Compiler {
     }
 
     lookup(name: string): Ref {
-        // TODO: locals
+        for (let frameDist = 0; frameDist < this.locals.length; frameDist++) {
+            const scope = this.locals[this.locals.length - frameDist - 1];
+            let index = scope.get(name);
+            if (index !== undefined) {
+                return { typ: "StackRef", name, frameDist, index };
+            }
+        }
         const index = this.globals.get(name);
         if (index === undefined) {
             throw new CompilerError(`${name} is not defined`);
@@ -97,14 +112,16 @@ class Compiler {
                 // compile the function
                 const lambdaStart = this.bytes.length;
                 this.push({ op: Opcode.MakeLambda, arity: expr.params.length });
+                this.locals.push(new Map());
                 if (expr.name !== undefined) {
-                    // handle locals
+                    // handle name
                 }
-                for (const param of expr.params) {
-                    // handle locals
+                for (let i = 0; i < expr.params.length; i++) {
+                    this.locals[this.locals.length - 1].set(expr.params[i], i);
                 }
                 this.compile(expr.body);
                 this.push({ op: Opcode.Return });
+                this.locals.pop();
 
                 // fix the jump target to land after the compiled function
                 writeInt(this.bytes, jmp, this.bytes.length);
@@ -145,6 +162,15 @@ class Compiler {
                     case "GlobalRef":
                         this.push({ op: Opcode.GetGlobal, index: ref.index });
                         break;
+                    case "StackRef":
+                        this.push({
+                            op: Opcode.GetStack,
+                            frameDist: ref.frameDist,
+                            index: ref.index,
+                        });
+                        break;
+                    default:
+                        const __fail: never = ref;
                 }
                 break;
 
