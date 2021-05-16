@@ -267,8 +267,7 @@ class Parser {
     }
 }
 
-export function parse(text: string): Prog {
-    const toks = lex(text);
+export function parse(toks: Token[]): Prog {
     const parser = new Parser(toks);
     const exprs = [];
     while (!parser.atEnd()) {

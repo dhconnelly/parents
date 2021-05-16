@@ -6,9 +6,11 @@ import { compile as compileAST } from "../src/compiler/compiler";
 import { parse } from "../src/parser";
 import { Type } from "../src/values";
 import { disasm } from "../src/disasm/disasm";
+import { lex } from "../src/lexer";
 
 function compile(text: string): Instr[] {
-    const prog = parse(text);
+    const toks = lex(text);
+    const prog = parse(toks);
     const bytes = compileAST(prog);
     return disasm(new DataView(bytes.buffer)).map((si) => si.instr);
 }
