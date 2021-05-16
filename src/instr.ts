@@ -13,6 +13,9 @@ export const BUILT_INS = {
     "=": 3,
     assert: 4,
     display: 5,
+    "*": 6,
+    isnil: 7,
+    nil: 8,
 };
 export const NUM_BUILT_INS = Object.keys(BUILT_INS).length;
 
@@ -34,6 +37,8 @@ export enum Opcode {
     Return = 15,
     GetStack = 16,
     MakeLambda = 17,
+    Mul = 18,
+    IsNil = 19,
 }
 
 export type Instr =
@@ -53,7 +58,9 @@ export type Instr =
     | CallInstr
     | ReturnInstr
     | GetStackInstr
-    | MakeLambdaInstr;
+    | MakeLambdaInstr
+    | MulInstr
+    | IsNilInstr;
 
 type PushInstr = { readonly op: Opcode.Push; readonly value: Value };
 type PopInstr = { readonly op: Opcode.Pop };
@@ -84,6 +91,8 @@ type MakeLambdaInstr = {
     readonly arity: number;
     readonly captures: number;
 };
+type MulInstr = { readonly op: Opcode.Mul };
+type IsNilInstr = { readonly op: Opcode.IsNil };
 
 export type SizedInstr = {
     readonly instr: Instr;
@@ -136,6 +145,8 @@ export function writeInstr(instr: Instr, data: number[]): SizedInstr {
             data.push(...serializeNumber(instr.arity));
             return { instr, size: 5 };
 
+        case Opcode.IsNil:
+        case Opcode.Mul:
         case Opcode.Return:
         case Opcode.DefGlobal:
         case Opcode.Pop:
@@ -197,6 +208,8 @@ export function readInstr(bytes: DataView, at: number): SizedInstr {
             return { instr: { op, pc, arity, captures }, size: 13 };
         }
 
+        case Opcode.IsNil:
+        case Opcode.Mul:
         case Opcode.Return:
         case Opcode.DefGlobal:
         case Opcode.Pop:
@@ -221,6 +234,8 @@ export function printInstr(instr: Instr): string {
         case Opcode.JmpIf: return `jmp_if ${instr.pc}`;
         case Opcode.Pop: return "pop";
         case Opcode.Add: return "add";
+        case Opcode.Mul: return "mul";
+        case Opcode.IsNil: return "isnil";
         case Opcode.Sub: return "sub";
         case Opcode.Eq: return "eq";
         case Opcode.Lt: return "lt";

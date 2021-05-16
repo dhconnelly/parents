@@ -133,6 +133,8 @@ class VM {
                 break;
             }
 
+            case Opcode.IsNil:
+            case Opcode.Mul:
             case Opcode.MakeLambda:
             case Opcode.GetStack:
             case Opcode.StartLambda:

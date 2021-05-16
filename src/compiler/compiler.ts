@@ -55,18 +55,6 @@ class Compiler {
         this.push({ op: Opcode.Push, value });
     }
 
-    compileBuiltIn(name: string) {
-        // prettier-ignore
-        switch (name) {
-            case "+": return this.push({ op: Opcode.Add });
-            case "-": return this.push({ op: Opcode.Sub });
-            case "=": return this.push({ op: Opcode.Eq });
-            case "<": return this.push({ op: Opcode.Lt });
-            case "assert": return this.push({ op: Opcode.Assert });
-            case "display": return this.push({ op: Opcode.Display });
-        }
-    }
-
     lookup(name: string): Ref {
         for (let frameDist = 0; frameDist < this.locals.length; frameDist++) {
             const scope = this.locals[this.locals.length - frameDist - 1];
