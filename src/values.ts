@@ -21,7 +21,7 @@ function printType(typ: Type): string {
     }
 }
 
-class TypeCheckError extends Error {
+export class TypeCheckError extends Error {
     constructor(message: string) {
         super(message);
     }
@@ -95,16 +95,18 @@ export function serializeNumber(num: number): number[] {
     ];
 }
 
-type SizedValue = {
-    value: Value;
-    size: number;
-};
-
-class ValueError extends Error {
+export class ValueError extends Error {
     constructor(message: string) {
         super(message);
     }
 }
+
+export type SerializableValue = IntValue | BoolValue | NilValue;
+
+export type SizedValue = {
+    value: SerializableValue;
+    size: number;
+};
 
 export function deserialize(view: DataView, at: number): SizedValue {
     const typ = view.getUint8(at);
@@ -130,9 +132,6 @@ export function deserialize(view: DataView, at: number): SizedValue {
         case Type.NilType:
             return { value: { typ: Type.NilType }, size: 1 };
 
-        case Type.BuiltInFnType:
-        case Type.FnType:
-            throw new Error("not implemented");
         default:
             throw new ValueError(
                 `bad value at byte offset ${view.byteOffset + at}`
@@ -146,7 +145,7 @@ export function deserialize(view: DataView, at: number): SizedValue {
 // layouts:
 // int: big-endian signed 32-bit int
 // others: not yet implemented
-export function serialize(value: Value): number[] {
+export function serialize(value: SerializableValue): number[] {
     const nums: number[] = [];
     nums.push(value.typ);
     switch (value.typ) {
@@ -160,10 +159,6 @@ export function serialize(value: Value): number[] {
 
         case Type.NilType:
             break;
-
-        case Type.BuiltInFnType:
-        case Type.FnType:
-            throw new Error("not implemented");
     }
     return nums;
 }

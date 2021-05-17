@@ -1,5 +1,5 @@
 import {
-    Value,
+    SerializableValue,
     deserialize,
     serialize,
     serializeNumber,
@@ -62,7 +62,10 @@ export type Instr =
     | MulInstr
     | IsNilInstr;
 
-type PushInstr = { readonly op: Opcode.Push; readonly value: Value };
+type PushInstr = {
+    readonly op: Opcode.Push;
+    readonly value: SerializableValue;
+};
 type PopInstr = { readonly op: Opcode.Pop };
 type AddInstr = { readonly op: Opcode.Add };
 type SubInstr = { readonly op: Opcode.Sub };

@@ -3,13 +3,16 @@ import { EvaluationError } from "./interpreter/evaluator";
 import { ExecutionError } from "./vm/vm";
 import { LexerError } from "./lexer";
 import { ParserError } from "./parser";
+import { ValueError, TypeCheckError } from "./values";
 
 export type RootError =
     | LexerError
     | ParserError
     | CompilerError
     | EvaluationError
-    | ExecutionError;
+    | ExecutionError
+    | TypeCheckError
+    | ValueError;
 
 function liftError(err: RootError): RootError {
     return err;

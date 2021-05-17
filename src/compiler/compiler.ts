@@ -1,5 +1,5 @@
 import { Expr, printExpr, Prog } from "../ast";
-import { serializeNumber, Type, Value } from "../values";
+import { SerializableValue, serializeNumber, Type, Value } from "../values";
 import { Instr, Opcode, writeInstr, BUILT_INS } from "../instr";
 import { Result, Ok, Err } from "../util";
 
@@ -51,7 +51,7 @@ class Compiler {
         writeInstr(instr, this.bytes);
     }
 
-    pushValue(value: Value) {
+    pushValue(value: SerializableValue) {
         this.push({ op: Opcode.Push, value });
     }
 
