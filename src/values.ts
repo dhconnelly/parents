@@ -1,54 +1,109 @@
-import { Expr } from "./ast";
-import { Scope } from "./interpreter/scope";
-import { Type, TypeCheckError } from "./types";
-import {
-    NilValue,
-    IntValue,
-    BoolValue,
-    AbstractValue,
-    print as printSerializable,
-} from "./serializable_value";
+import { Type } from "./types";
 
-export type Value = NilValue | IntValue | BoolValue | FnValue | BuiltInFnValue;
-
-export interface FnValue extends AbstractValue {
-    readonly typ: Type.FnType;
-    readonly scope: Scope;
-    readonly params: string[];
-    readonly body: Expr;
-    readonly name?: string;
+export interface AbstractValue {
+    readonly typ: Type;
 }
 
-export interface BuiltInFnValue extends AbstractValue {
-    readonly typ: Type.BuiltInFnType;
-    readonly name: string;
-    readonly arity: number;
-    readonly impl: (args: Expr[]) => Value;
+export interface NilValue extends AbstractValue {
+    readonly typ: Type.NilType;
 }
 
-export function print(value: Value): string {
-    switch (value.typ) {
-        case Type.BuiltInFnType:
-            return `<built-in-fn ${value.name}>`;
-        case Type.FnType:
-            return value.name ? `<fn ${value.name}>` : "<anonymous fn>";
-        case Type.BoolType:
-        case Type.IntType:
+export interface IntValue extends AbstractValue {
+    readonly typ: Type.IntType;
+    readonly value: number;
+}
+
+export interface BoolValue extends AbstractValue {
+    readonly typ: Type.BoolType;
+    readonly value: boolean;
+}
+
+// return the bytes of |num| in big-endian order
+export function serializeNumber(num: number): number[] {
+    const arr = new ArrayBuffer(4);
+    const view = new DataView(arr);
+    view.setInt32(0, num, false);
+    return [
+        view.getUint8(0),
+        view.getUint8(1),
+        view.getUint8(2),
+        view.getUint8(3),
+    ];
+}
+
+export class ValueError extends Error {
+    constructor(message: string) {
+        super(message);
+    }
+}
+
+export type SerializableValue = IntValue | BoolValue | NilValue;
+
+export type SizedValue = {
+    value: SerializableValue;
+    size: number;
+};
+
+export function deserialize(view: DataView, at: number): SizedValue {
+    const typ = view.getUint8(at);
+    switch (typ) {
+        case Type.IntType: {
+            const num = view.getInt32(at + 1);
+            const value: SerializableValue = { typ: Type.IntType, value: num };
+            return { value, size: 5 };
+        }
+
+        case Type.BoolType: {
+            const bool = view.getUint8(at + 1);
+            if (bool !== 0 && bool !== 1)
+                throw new ValueError(
+                    `bad boolean value at byte offset ${
+                        view.byteOffset + at
+                    }: ${bool}`
+                );
+            const value = bool === 0 ? false : true;
+            return { value: { typ: Type.BoolType, value }, size: 2 };
+        }
+
         case Type.NilType:
-            return printSerializable(value);
+            return { value: { typ: Type.NilType }, size: 1 };
+
+        default:
+            throw new ValueError(
+                `bad value at byte offset ${view.byteOffset + at}`
+            );
     }
 }
 
-export function getInt(value: Value): number {
-    if (value.typ !== Type.IntType) {
-        throw new TypeCheckError(Type.IntType, value.typ);
+// serializes |value| to bytes, prefixed by a single byte representing the
+// type of the value (see enum Type for the value).
+//
+// layouts:
+// int: big-endian signed 32-bit int
+// others: not yet implemented
+export function serialize(value: SerializableValue): number[] {
+    const nums: number[] = [];
+    nums.push(value.typ);
+    switch (value.typ) {
+        case Type.IntType:
+            nums.push(...serializeNumber(value.value));
+            break;
+
+        case Type.BoolType:
+            nums.push(value.value ? 1 : 0);
+            break;
+
+        case Type.NilType:
+            break;
     }
-    return value.value;
+    return nums;
 }
 
-export function getBool(value: Value): boolean {
-    if (value.typ !== Type.BoolType) {
-        throw new TypeCheckError(Type.BoolType, value.typ);
+export function print(value: SerializableValue): string {
+    // prettier-ignore
+    switch (value.typ) {
+        case Type.BoolType: return value.value.toString();
+        case Type.IntType: return value.value.toString(10);
+        case Type.NilType: return "null";
     }
-    return value.value;
 }

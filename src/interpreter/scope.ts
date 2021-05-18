@@ -1,5 +1,5 @@
 import { Option } from "../util";
-import { Value } from "../values";
+import { Value } from "./values";
 
 export class Scope {
     up?: Scope;

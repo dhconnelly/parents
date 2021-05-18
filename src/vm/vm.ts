@@ -1,4 +1,4 @@
-import { Value, getInt, print, getBool } from "../values";
+import { Value, getInt, print, getBool } from "../interpreter/values";
 import { Opcode, printInstr, readInstr } from "../instr";
 import { Option, unwrap } from "../util";
 import { Type } from "../types";

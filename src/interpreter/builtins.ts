@@ -1,6 +1,6 @@
 import { Option } from "src/util";
 import { Expr, printExpr } from "../ast";
-import { Value, print } from "../values";
+import { Value, print } from "./values";
 import { Type } from "../types";
 import { Evaluator } from "./evaluator";
 

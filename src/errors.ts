@@ -3,7 +3,8 @@ import { EvaluationError } from "./interpreter/evaluator";
 import { ExecutionError } from "./vm/vm";
 import { LexerError } from "./lexer";
 import { ParserError } from "./parser";
-import { ValueError, TypeCheckError } from "./values";
+import { ValueError } from "./values";
+import { TypeCheckError } from "./types";
 
 export type RootError =
     | LexerError
