@@ -1,4 +1,4 @@
-import { Type } from "./types";
+import { Type, TypeCheckError } from "./types";
 
 export interface AbstractValue {
     readonly typ: Type;

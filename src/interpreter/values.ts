@@ -38,17 +38,3 @@ export function print(value: Value): string {
             return printSerializable(value);
     }
 }
-
-export function getInt(value: Value): number {
-    if (value.typ !== Type.IntType) {
-        throw new TypeCheckError(Type.IntType, value.typ);
-    }
-    return value.value;
-}
-
-export function getBool(value: Value): boolean {
-    if (value.typ !== Type.BoolType) {
-        throw new TypeCheckError(Type.BoolType, value.typ);
-    }
-    return value.value;
-}
