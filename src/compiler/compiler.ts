@@ -119,7 +119,7 @@ class Compiler {
                 for (const { frameDist, index } of this.captures[
                     this.captures.length - 1
                 ]) {
-                    this.push({ op: Opcode.GetStack, frameDist, index });
+                    this.push({ op: Opcode.Get, frameDist, index });
                 }
                 this.push({
                     op: Opcode.MakeLambda,
@@ -157,7 +157,7 @@ class Compiler {
                         const { frameDist, index } = ref;
                         if (frameDist === 0) {
                             this.push({
-                                op: Opcode.GetStack,
+                                op: Opcode.Get,
                                 frameDist,
                                 index,
                             });
@@ -166,7 +166,7 @@ class Compiler {
                             const localIndex = top.size;
                             top.set(ref.name, localIndex);
                             this.push({
-                                op: Opcode.GetStack,
+                                op: Opcode.Get,
                                 frameDist: 0,
                                 index: localIndex,
                             });

@@ -19,22 +19,16 @@ var Opcode;
 (function (Opcode) {
     Opcode[Opcode["Push"] = 1] = "Push";
     Opcode[Opcode["Pop"] = 2] = "Pop";
-    Opcode[Opcode["Add"] = 3] = "Add";
-    Opcode[Opcode["Sub"] = 4] = "Sub";
-    Opcode[Opcode["Eq"] = 5] = "Eq";
-    Opcode[Opcode["Lt"] = 6] = "Lt";
     Opcode[Opcode["Assert"] = 7] = "Assert";
     Opcode[Opcode["Display"] = 8] = "Display";
     Opcode[Opcode["JmpIf"] = 9] = "JmpIf";
     Opcode[Opcode["Jmp"] = 10] = "Jmp";
     Opcode[Opcode["DefGlobal"] = 11] = "DefGlobal";
     Opcode[Opcode["GetGlobal"] = 12] = "GetGlobal";
-    Opcode[Opcode["StartLambda"] = 13] = "StartLambda";
     Opcode[Opcode["Call"] = 14] = "Call";
     Opcode[Opcode["Return"] = 15] = "Return";
     Opcode[Opcode["GetStack"] = 16] = "GetStack";
     Opcode[Opcode["MakeLambda"] = 17] = "MakeLambda";
-    Opcode[Opcode["Mul"] = 18] = "Mul";
     Opcode[Opcode["IsNil"] = 19] = "IsNil";
 })(Opcode = exports.Opcode || (exports.Opcode = {}));
 function cannot(x) {
@@ -73,19 +67,13 @@ function writeInstr(instr, data) {
             data.push(...bytes);
             return { instr, size: bytes.length + 1 };
         }
-        case Opcode.StartLambda:
         case Opcode.Call:
             data.push(...values_1.serializeNumber(instr.arity));
             return { instr, size: 5 };
         case Opcode.IsNil:
-        case Opcode.Mul:
         case Opcode.Return:
         case Opcode.DefGlobal:
         case Opcode.Pop:
-        case Opcode.Add:
-        case Opcode.Sub:
-        case Opcode.Eq:
-        case Opcode.Lt:
         case Opcode.Assert:
         case Opcode.Display:
             return { instr, size: 1 };
@@ -116,8 +104,7 @@ function readInstr(bytes, at) {
             const pc = bytes.getInt32(at + 1);
             return { instr: { op, pc }, size: 5 };
         }
-        case Opcode.Call:
-        case Opcode.StartLambda: {
+        case Opcode.Call: {
             const arity = bytes.getInt32(at + 1);
             return { instr: { op, arity }, size: 5 };
         }
@@ -133,14 +120,9 @@ function readInstr(bytes, at) {
             return { instr: { op, pc, arity, captures }, size: 13 };
         }
         case Opcode.IsNil:
-        case Opcode.Mul:
         case Opcode.Return:
         case Opcode.DefGlobal:
         case Opcode.Pop:
-        case Opcode.Add:
-        case Opcode.Sub:
-        case Opcode.Eq:
-        case Opcode.Lt:
         case Opcode.Assert:
         case Opcode.Display:
             return { instr: { op }, size: 1 };
@@ -156,17 +138,11 @@ function printInstr(instr) {
         case Opcode.Jmp: return `jmp ${instr.pc}`;
         case Opcode.JmpIf: return `jmp_if ${instr.pc}`;
         case Opcode.Pop: return "pop";
-        case Opcode.Add: return "add";
-        case Opcode.Mul: return "mul";
         case Opcode.IsNil: return "isnil";
-        case Opcode.Sub: return "sub";
-        case Opcode.Eq: return "eq";
-        case Opcode.Lt: return "lt";
         case Opcode.Assert: return "assert";
         case Opcode.Display: return "display";
         case Opcode.DefGlobal: return `def_global`;
         case Opcode.GetGlobal: return `get_global ${instr.index}`;
-        case Opcode.StartLambda: return `make_lambda arity=${instr.arity}`;
         case Opcode.Call: return `call arity=${instr.arity}`;
         case Opcode.Return: return "return";
         case Opcode.GetStack:

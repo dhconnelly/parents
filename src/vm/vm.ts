@@ -153,62 +153,6 @@ class VM {
                 this.pc += size;
                 break;
 
-            case Opcode.Add: {
-                const b = getInt(this.popStack());
-                const a = getInt(this.popStack());
-                this.stack.push({ typ: Type.IntType, value: a + b });
-                this.pc += size;
-                break;
-            }
-
-            case Opcode.Sub: {
-                const b = getInt(this.popStack());
-                const a = getInt(this.popStack());
-                this.stack.push({ typ: Type.IntType, value: a - b });
-                this.pc += size;
-                break;
-            }
-
-            case Opcode.Eq: {
-                const b = this.popStack();
-                const a = this.popStack();
-                let c: Option<boolean>;
-                // prettier-ignore
-                switch (a.typ) {
-                    case Type.IntType: c = a.value === getInt(b); break;
-                    case Type.BoolType: c = a.value === getBool(b); break;
-                    case Type.NilType: c = b.typ === Type.NilType; break;
-                    case Type.BuiltInFnType:
-                    case Type.FnType:
-                        throw new Error("unimplemented");
-                }
-                this.stack.push({ typ: Type.BoolType, value: c });
-                this.pc += size;
-                break;
-            }
-
-            case Opcode.Lt: {
-                const b = getInt(this.popStack());
-                const a = getInt(this.popStack());
-                this.stack.push({ typ: Type.BoolType, value: a < b });
-                this.pc += size;
-                break;
-            }
-
-            case Opcode.Assert: {
-                const value = getBool(this.popStack());
-                if (!value) console.log("assertion failed");
-                this.stack.push({ typ: Type.NilType });
-                this.pc += size;
-                break;
-            }
-
-            case Opcode.Display:
-                console.log(print(this.popStack()));
-                this.stack.push({ typ: Type.NilType });
-                this.pc += size;
-                break;
-
             case Opcode.JmpIf:
                 if (getBool(this.popStack())) {
                     this.pc = instr.pc;
@@ -228,11 +172,8 @@ class VM {
                 break;
             }
 
-            case Opcode.IsNil:
-            case Opcode.Mul:
             case Opcode.MakeLambda:
-            case Opcode.GetStack:
-            case Opcode.StartLambda:
+            case Opcode.Get:
             case Opcode.Return:
             case Opcode.Call: {
                 throw new Error();

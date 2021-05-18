@@ -206,7 +206,7 @@ describe("compiler", function () {
         // prettier-ignore
         const expected: Instr[] = [
         /*  0 */ { op: Opcode.Jmp, pc: 15 },
-        /*  5 */ { op: Opcode.GetStack, frameDist: 0, index: 0 },
+        /*  5 */ { op: Opcode.Get, frameDist: 0, index: 0 },
         /* 14 */ { op: Opcode.Return },
         /* 12 */ { op: Opcode.MakeLambda, pc: 5, arity: 1, captures: 0 },
         /* 25 */ { op: Opcode.Pop },
@@ -219,7 +219,7 @@ describe("compiler", function () {
         // prettier-ignore
         const expected: Instr[] = [
         /*  0 */ { op: Opcode.Jmp, pc: 15 },
-        /*  5 */ { op: Opcode.GetStack, frameDist: 0, index: 0 },
+        /*  5 */ { op: Opcode.Get, frameDist: 0, index: 0 },
         /* 14 */ { op: Opcode.Return },
         /* 15 */ { op: Opcode.MakeLambda, pc: 5, arity: 1, captures: 0 },
         /* 28 */ { op: Opcode.DefGlobal },
@@ -241,7 +241,7 @@ describe("compiler", function () {
         const expected: Instr[] = [
         /*  0 */ { op: Opcode.Push, value: { typ: Type.IntType, value: 3 } },
         /*  6 */ { op: Opcode.Jmp, pc: 21 },
-        /* 11 */ { op: Opcode.GetStack, frameDist: 0, index: 0 },
+        /* 11 */ { op: Opcode.Get, frameDist: 0, index: 0 },
         /* 20 */ { op: Opcode.Return },
         /* 21 */ { op: Opcode.MakeLambda, pc: 11, arity: 1, captures: 0 },
         /* 34 */ { op: Opcode.Call, arity: 1 },
@@ -255,7 +255,7 @@ describe("compiler", function () {
         // prettier-ignore
         const expected: Instr[] = [
         /*  0 */ { op: Opcode.Jmp, pc: 15 },
-        /*  5 */ { op: Opcode.GetStack, frameDist: 0, index: 0 },
+        /*  5 */ { op: Opcode.Get, frameDist: 0, index: 0 },
         /* 14 */ { op: Opcode.Return },
         /* 15 */ { op: Opcode.MakeLambda, arity: 1, captures: 0, pc: 5 },
         /* 26 */ { op: Opcode.Pop },
@@ -285,12 +285,12 @@ describe("compiler", function () {
         const expected: Instr[] = [
         /*  0 */ { op: Opcode.Jmp, pc: 62 },
         /*  5 */ { op: Opcode.Jmp, pc: 39 },
-        /* 10 */ { op: Opcode.GetStack,frameDist: 0, index: 2 },
-        /* 19 */ { op: Opcode.GetStack,frameDist: 0, index: 0 },
+        /* 10 */ { op: Opcode.Get,frameDist: 0, index: 2 },
+        /* 19 */ { op: Opcode.Get,frameDist: 0, index: 0 },
         /* 28 */ { op: Opcode.GetGlobal, index: BUILT_INS["+"] },
         /* 33 */ { op: Opcode.Call, arity: 2 },
         /* 38 */ { op: Opcode.Return },
-        /* 39 */ { op: Opcode.GetStack, frameDist: 1, index: 0 },
+        /* 39 */ { op: Opcode.Get, frameDist: 1, index: 0 },
         /* 48 */ { op: Opcode.MakeLambda, arity: 1, captures: 1, pc: 10 },
         /* 61 */ { op: Opcode.Return },
         /* 62 */ { op: Opcode.MakeLambda, arity: 1, captures: 0, pc: 5 },
@@ -307,12 +307,12 @@ describe("compiler", function () {
             /*  6 */ { op: Opcode.Jmp, pc: 79 },
             /* 11 */ { op: Opcode.Push, value: { typ: Type.IntType, value: 5 } },
             /* 17 */ { op: Opcode.Jmp, pc: 51 },
-            /* 22 */ { op: Opcode.GetStack, frameDist: 0, index: 2 },
-            /* 27 */ { op: Opcode.GetStack, frameDist: 0, index: 0 },
+            /* 22 */ { op: Opcode.Get, frameDist: 0, index: 2 },
+            /* 27 */ { op: Opcode.Get, frameDist: 0, index: 0 },
             /* 40 */ { op: Opcode.GetGlobal, index: BUILT_INS["+"] },
             /* 45 */ { op: Opcode.Call, arity: 2 },
             /* 50 */ { op: Opcode.Return },
-            /* 51 */ { op: Opcode.GetStack, frameDist: 1, index: 0 },
+            /* 51 */ { op: Opcode.Get, frameDist: 1, index: 0 },
             /* 60 */ { op: Opcode.MakeLambda, arity: 1, captures: 1, pc: 22 },
             /* 73 */ { op: Opcode.Call, arity: 1 },
             /* 78 */ { op: Opcode.Return },
@@ -327,7 +327,7 @@ describe("compiler", function () {
         const instrs = compile("((lambda (f) (f 1)) (lambda (x) (+ x 1)))");
         const expected: Instr[] = [
             { op: Opcode.Jmp, pc: 31 },
-            { op: Opcode.GetStack, frameDist: 0, index: 0 },
+            { op: Opcode.Get, frameDist: 0, index: 0 },
             { op: Opcode.Push, value: { typ: Type.IntType, value: 1 } },
             { op: Opcode.GetGlobal, index: BUILT_INS["+"] },
             { op: Opcode.Call, arity: 2 },
@@ -335,7 +335,7 @@ describe("compiler", function () {
             { op: Opcode.MakeLambda, pc: 5, arity: 1, captures: 0 },
             { op: Opcode.Jmp, pc: 70 },
             { op: Opcode.Push, value: { typ: Type.IntType, value: 1 } },
-            { op: Opcode.GetStack, frameDist: 0, index: 0 },
+            { op: Opcode.Get, frameDist: 0, index: 0 },
             { op: Opcode.Call, arity: 1 },
             { op: Opcode.Return },
             { op: Opcode.MakeLambda, pc: 49, arity: 1, captures: 0 },
@@ -355,17 +355,17 @@ describe("compiler", function () {
         `);
         const expected: Instr[] = [
             { op: Opcode.Jmp, pc: 105 },
-            { op: Opcode.GetStack, frameDist: 0, index: 0 },
+            { op: Opcode.Get, frameDist: 0, index: 0 },
             { op: Opcode.Push, value: { typ: Type.IntType, value: 0 } },
             { op: Opcode.GetGlobal, index: BUILT_INS["="] },
             { op: Opcode.Call, arity: 2 },
             { op: Opcode.JmpIf, pc: 98 },
-            { op: Opcode.GetStack, frameDist: 0, index: 0 },
-            { op: Opcode.GetStack, frameDist: 0, index: 0 },
+            { op: Opcode.Get, frameDist: 0, index: 0 },
+            { op: Opcode.Get, frameDist: 0, index: 0 },
             { op: Opcode.Push, value: { typ: Type.IntType, value: 1 } },
             { op: Opcode.GetGlobal, index: BUILT_INS["-"] },
             { op: Opcode.Call, arity: 2 },
-            { op: Opcode.GetStack, frameDist: 0, index: 0 },
+            { op: Opcode.Get, frameDist: 0, index: 0 },
             { op: Opcode.Call, arity: 1 },
             { op: Opcode.GetGlobal, index: BUILT_INS["+"] },
             { op: Opcode.Call, arity: 2 },

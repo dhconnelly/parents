@@ -120,50 +120,6 @@ class VM {
                 this.popStack();
                 this.pc += size;
                 break;
-            case instr_1.Opcode.Add: {
-                const b = values_1.getInt(this.popStack());
-                const a = values_1.getInt(this.popStack());
-                this.stack.push({ typ: types_1.Type.IntType, value: a + b });
-                this.pc += size;
-                break;
-            }
-            case instr_1.Opcode.Sub: {
-                const b = values_1.getInt(this.popStack());
-                const a = values_1.getInt(this.popStack());
-                this.stack.push({ typ: types_1.Type.IntType, value: a - b });
-                this.pc += size;
-                break;
-            }
-            case instr_1.Opcode.Eq: {
-                const b = this.popStack();
-                const a = this.popStack();
-                let c;
-                // prettier-ignore
-                switch (a.typ) {
-                    case types_1.Type.IntType:
-                        c = a.value === values_1.getInt(b);
-                        break;
-                    case types_1.Type.BoolType:
-                        c = a.value === values_1.getBool(b);
-                        break;
-                    case types_1.Type.NilType:
-                        c = b.typ === types_1.Type.NilType;
-                        break;
-                    case types_1.Type.BuiltInFnType:
-                    case types_1.Type.FnType:
-                        throw new Error("unimplemented");
-                }
-                this.stack.push({ typ: types_1.Type.BoolType, value: c });
-                this.pc += size;
-                break;
-            }
-            case instr_1.Opcode.Lt: {
-                const b = values_1.getInt(this.popStack());
-                const a = values_1.getInt(this.popStack());
-                this.stack.push({ typ: types_1.Type.BoolType, value: a < b });
-                this.pc += size;
-                break;
-            }
             case instr_1.Opcode.Assert: {
                 const value = values_1.getBool(this.popStack());
                 if (!value)
@@ -195,10 +151,8 @@ class VM {
                 break;
             }
             case instr_1.Opcode.IsNil:
-            case instr_1.Opcode.Mul:
             case instr_1.Opcode.MakeLambda:
             case instr_1.Opcode.GetStack:
-            case instr_1.Opcode.StartLambda:
             case instr_1.Opcode.Return:
             case instr_1.Opcode.Call: {
                 throw new Error();

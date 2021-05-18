@@ -23,69 +23,41 @@ export const NUM_BUILT_INS = Object.keys(BUILT_INS).length;
 export enum Opcode {
     Push = 1,
     Pop = 2,
-    Add = 3,
-    Sub = 4,
-    Eq = 5,
-    Lt = 6,
-    Assert = 7,
-    Display = 8,
-    JmpIf = 9,
-    Jmp = 10,
-    DefGlobal = 11,
-    GetGlobal = 12,
-    StartLambda = 13,
-    Call = 14,
-    Return = 15,
-    GetStack = 16,
-    MakeLambda = 17,
-    Mul = 18,
-    IsNil = 19,
+    Get = 3,
+    DefGlobal = 4,
+    GetGlobal = 5,
+    JmpIf = 6,
+    Jmp = 7,
+    Call = 8,
+    Return = 9,
+    MakeLambda = 10,
 }
 
 export type Instr =
     | PushInstr
     | PopInstr
-    | AddInstr
-    | SubInstr
-    | LtInstr
-    | EqInstr
-    | AssertInstr
-    | DisplayInstr
     | JmpIfInstr
     | JmpInstr
     | DefGlobalInstr
     | GetGlobalInstr
-    | StartLambdaInstr
     | CallInstr
     | ReturnInstr
     | GetStackInstr
-    | MakeLambdaInstr
-    | MulInstr
-    | IsNilInstr;
+    | MakeLambdaInstr;
 
 type PushInstr = {
     readonly op: Opcode.Push;
     readonly value: SerializableValue;
 };
 type PopInstr = { readonly op: Opcode.Pop };
-type AddInstr = { readonly op: Opcode.Add };
-type SubInstr = { readonly op: Opcode.Sub };
-type LtInstr = { readonly op: Opcode.Lt };
-type EqInstr = { readonly op: Opcode.Eq };
-type DisplayInstr = { readonly op: Opcode.Display };
-type AssertInstr = { readonly op: Opcode.Assert };
 type JmpIfInstr = { readonly op: Opcode.JmpIf; readonly pc: number };
 type JmpInstr = { readonly op: Opcode.Jmp; readonly pc: number };
 type DefGlobalInstr = { readonly op: Opcode.DefGlobal };
 type GetGlobalInstr = { readonly op: Opcode.GetGlobal; readonly index: number };
-type StartLambdaInstr = {
-    readonly op: Opcode.StartLambda;
-    readonly arity: number;
-};
 type CallInstr = { readonly op: Opcode.Call; readonly arity: number };
 type ReturnInstr = { readonly op: Opcode.Return };
 type GetStackInstr = {
-    readonly op: Opcode.GetStack;
+    readonly op: Opcode.Get;
     readonly frameDist: number;
     readonly index: number;
 };
@@ -95,17 +67,11 @@ type MakeLambdaInstr = {
     readonly arity: number;
     readonly captures: number;
 };
-type MulInstr = { readonly op: Opcode.Mul };
-type IsNilInstr = { readonly op: Opcode.IsNil };
 
 export type SizedInstr = {
     readonly instr: Instr;
     readonly size: number;
 };
-
-function cannot(x: never): never {
-    throw new Error("never");
-}
 
 // bytecode format:
 // - variable-length instructions
@@ -126,7 +92,7 @@ export function writeInstr(instr: Instr, data: number[]): SizedInstr {
             return { instr, size: 5 };
         }
 
-        case Opcode.GetStack: {
+        case Opcode.Get: {
             data.push(...serializeNumber(instr.frameDist));
             data.push(...serializeNumber(instr.index));
             return { instr, size: 5 };
@@ -144,22 +110,13 @@ export function writeInstr(instr: Instr, data: number[]): SizedInstr {
             return { instr, size: bytes.length + 1 };
         }
 
-        case Opcode.StartLambda:
         case Opcode.Call:
             data.push(...serializeNumber(instr.arity));
             return { instr, size: 5 };
 
-        case Opcode.IsNil:
-        case Opcode.Mul:
         case Opcode.Return:
         case Opcode.DefGlobal:
         case Opcode.Pop:
-        case Opcode.Add:
-        case Opcode.Sub:
-        case Opcode.Eq:
-        case Opcode.Lt:
-        case Opcode.Assert:
-        case Opcode.Display:
             return { instr, size: 1 };
 
         case Opcode.MakeLambda: {
@@ -168,9 +125,6 @@ export function writeInstr(instr: Instr, data: number[]): SizedInstr {
             data.push(...serializeNumber(instr.captures));
             return { instr, size: 13 };
         }
-
-        default:
-            cannot(instr);
     }
 }
 
@@ -193,13 +147,12 @@ export function readInstr(bytes: DataView, at: number): SizedInstr {
             return { instr: { op, pc }, size: 5 };
         }
 
-        case Opcode.Call:
-        case Opcode.StartLambda: {
+        case Opcode.Call: {
             const arity = bytes.getInt32(at + 1);
             return { instr: { op, arity }, size: 5 };
         }
 
-        case Opcode.GetStack: {
+        case Opcode.Get: {
             const frameDist = bytes.getInt32(at + 1);
             const index = bytes.getInt32(at + 5);
             return { instr: { op, frameDist, index }, size: 9 };
@@ -212,17 +165,9 @@ export function readInstr(bytes: DataView, at: number): SizedInstr {
             return { instr: { op, pc, arity, captures }, size: 13 };
         }
 
-        case Opcode.IsNil:
-        case Opcode.Mul:
         case Opcode.Return:
         case Opcode.DefGlobal:
         case Opcode.Pop:
-        case Opcode.Add:
-        case Opcode.Sub:
-        case Opcode.Eq:
-        case Opcode.Lt:
-        case Opcode.Assert:
-        case Opcode.Display:
             return { instr: { op }, size: 1 };
 
         default:
@@ -237,25 +182,13 @@ export function printInstr(instr: Instr): string {
         case Opcode.Jmp: return `jmp ${instr.pc}`;
         case Opcode.JmpIf: return `jmp_if ${instr.pc}`;
         case Opcode.Pop: return "pop";
-        case Opcode.Add: return "add";
-        case Opcode.Mul: return "mul";
-        case Opcode.IsNil: return "isnil";
-        case Opcode.Sub: return "sub";
-        case Opcode.Eq: return "eq";
-        case Opcode.Lt: return "lt";
-        case Opcode.Assert: return "assert";
-        case Opcode.Display: return "display";
         case Opcode.DefGlobal: return `def_global`;
         case Opcode.GetGlobal: return `get_global ${instr.index}`;
-        case Opcode.StartLambda: return `make_lambda arity=${instr.arity}`;
         case Opcode.Call: return `call arity=${instr.arity}`;
         case Opcode.Return: return "return";
-        case Opcode.GetStack:
+        case Opcode.Get:
             return `get_stack frame=${instr.frameDist} index=${instr.index}`;
         case Opcode.MakeLambda:
             return `make_lambda pc=${instr.pc} arity=${instr.arity} captures=${instr.captures}`;
-        default:
-            const __fail: never = instr;
-            throw new Error();
     }
 }
