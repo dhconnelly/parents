@@ -1,9 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.parse = exports.ParserError = void 0;
-const lexer_1 = require("./lexer");
 const util_1 = require("./util");
-class ParserError extends util_1.RootError {
+class ParserError extends Error {
     constructor(message) {
         super(message);
     }
@@ -84,13 +83,19 @@ class Parser {
         this.eat("rparen");
         const body = this.expr();
         this.eat("rparen");
-        return {
+        const f = {
+            typ: "LambdaExpr",
             line: tok.line,
             col: tok.col,
-            typ: "LetExpr",
-            name,
-            binding,
-            body,
+            params: [name],
+            body: body,
+        };
+        return {
+            typ: "CallExpr",
+            f,
+            args: [binding],
+            col: tok.col,
+            line: tok.line,
         };
     }
     if() {
@@ -98,7 +103,7 @@ class Parser {
         this.eat("if");
         const cond = this.expr();
         const cons = this.expr();
-        const alt = this.peek().typ === "rparen" ? undefined : this.expr();
+        const alt = this.expr();
         this.eat("rparen");
         return {
             line: tok.line,
@@ -138,7 +143,25 @@ class Parser {
             exprs.push(this.expr());
         }
         this.eat("rparen");
-        return { line: tok.line, col: tok.col, typ: "SeqExpr", exprs };
+        const f = {
+            typ: "LambdaExpr",
+            col: tok.col,
+            line: tok.line,
+            body: {
+                typ: "IdentExpr",
+                col: tok.col,
+                line: tok.line,
+                value: `x${exprs.length - 1}`,
+            },
+            params: exprs.map((_, i) => `x${i}`),
+        };
+        return {
+            typ: "CallExpr",
+            line: tok.line,
+            col: tok.col,
+            f,
+            args: exprs,
+        };
     }
     call() {
         const tok = this.eat("lparen");
@@ -213,13 +236,22 @@ class Parser {
         }
     }
 }
-function parse(text) {
-    const toks = lexer_1.lex(text);
-    const parser = new Parser(toks);
-    const exprs = [];
-    while (!parser.atEnd()) {
-        exprs.push(parser.expr());
+function parse(toks) {
+    try {
+        const parser = new Parser(toks);
+        const exprs = [];
+        while (!parser.atEnd()) {
+            exprs.push(parser.expr());
+        }
+        return util_1.Ok({ exprs });
     }
-    return { exprs };
+    catch (err) {
+        if (err instanceof ParserError) {
+            return util_1.Err(err);
+        }
+        else {
+            throw err;
+        }
+    }
 }
 exports.parse = parse;

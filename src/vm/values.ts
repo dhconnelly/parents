@@ -9,7 +9,7 @@ import {
 export type BuiltInFn = {
     name: string;
     arity: number;
-    impl: (x: Value, y: Value) => Value;
+    impl: (...args: Value[]) => Value;
 };
 
 export type Closure = {

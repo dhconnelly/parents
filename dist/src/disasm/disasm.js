@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.disasm = void 0;
-const instr_1 = require("./instr");
+const instr_1 = require("../instr");
 function disasm(bytes) {
     const instrs = [];
     let i = 0;

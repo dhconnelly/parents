@@ -6,17 +6,18 @@ import {
     print,
 } from "./values";
 
+// prettier-ignore
 export const BUILT_INS = {
     "+": 0,
     "-": 1,
     "<": 2,
     "=": 3,
-    assert: 4,
-    display: 5,
+    "assert": 4,
+    "display": 5,
     "*": 6,
-    isnil: 7,
-    nil: 8,
-};
+    "isnil": 7,
+    "nil": 8,
+} as const;
 export const NUM_BUILT_INS = Object.keys(BUILT_INS).length;
 
 export enum Opcode {

@@ -2,8 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.lex = exports.LexerError = void 0;
 const util_1 = require("./util");
-const util_2 = require("./util");
-class LexerError extends util_1.RootError {
+class LexerError extends Error {
     constructor(message) {
         super(message);
     }
@@ -128,7 +127,7 @@ class Lexer {
                     return this.boolean();
                 case "-":
                     const next = this.maybe_peek(1);
-                    if (util_2.hasValue(next) && IS_NUM.test(next))
+                    if (util_1.hasValue(next) && IS_NUM.test(next))
                         return this.int();
                 // fallthrough
                 case "+":
@@ -155,13 +154,23 @@ class Lexer {
     }
 }
 function lex(text) {
-    const lexer = new Lexer(text);
-    const toks = [];
-    while (!lexer.atEnd()) {
-        let maybe_tok = lexer.next();
-        if (maybe_tok)
-            toks.push(maybe_tok);
+    try {
+        const lexer = new Lexer(text);
+        const toks = [];
+        while (!lexer.atEnd()) {
+            let maybe_tok = lexer.next();
+            if (maybe_tok)
+                toks.push(maybe_tok);
+        }
+        return util_1.Ok(toks);
     }
-    return toks;
+    catch (err) {
+        if (err instanceof LexerError) {
+            return util_1.Err(err);
+        }
+        else {
+            throw err;
+        }
+    }
 }
 exports.lex = lex;

@@ -1,8 +1,21 @@
-import { Opcode, printInstr, readInstr } from "../instr";
+import {
+    BUILT_INS,
+    NUM_BUILT_INS,
+    Opcode,
+    printInstr,
+    readInstr,
+} from "../instr";
 import { Option, unwrap } from "../util";
 import { Type } from "../types";
-import { print, Value } from "./values";
-import { getInt, getBool } from "./values";
+import {
+    print,
+    Value,
+    Closure,
+    getInt,
+    getBool,
+    BuiltInFnRef,
+    BuiltInFn,
+} from "./values";
 
 export class ExecutionError extends Error {
     constructor(message: string) {
@@ -10,11 +23,81 @@ export class ExecutionError extends Error {
     }
 }
 
+// prettier-ignore
+const BUILT_IN_FNS: Map<keyof typeof BUILT_INS, BuiltInFn> = new Map([
+    ["+", {
+        name: "add",
+        arity: 2,
+        impl: (...args: Value[]) => {
+            return { typ: Type.IntType, value: getInt(args[0]) + getInt(args[1]) };
+        },
+    }],
+
+    ["-", {
+        name: "sub",
+        arity: 2,
+        impl: (...args: Value[]) => {
+            return { typ: Type.IntType, value: getInt(args[0]) - getInt(args[1]) };
+        },
+    }],
+
+    ["<", {
+        name: "lt",
+        arity: 2,
+        impl: (...args: Value[]) => {
+            return { typ: Type.BoolType, value: getInt(args[0]) < getInt(args[1]) };
+        },
+    }],
+
+    ["=", {
+        name: "eq",
+        arity: 2,
+        impl: (...args: Value[]) => {
+            return { typ: Type.BoolType, value: getInt(args[0]) === getInt(args[1]) };
+        },
+    }],
+
+    ["assert", {
+        name: "assert",
+        arity: 1,
+        impl: (...args: Value[]) => {
+            if (!getBool(args[0])) throw new ExecutionError("assertion failed");
+            return { typ: Type.NilType };
+        },
+    }],
+
+    ["display", {
+        name: "display",
+        arity: 1,
+        impl: (...args: Value[]) => {
+            console.log(print(args[0]));
+            return { typ: Type.NilType };
+        },
+    }],
+
+    ["*", {
+        name: "mul",
+        arity: 2,
+        impl: (...args: Value[]) => {
+            return { typ: Type.IntType, value: getInt(args[0]) * getInt(args[1]) };
+        },
+    }],
+
+    ["isnil", {
+        name: "isnil",
+        arity: 1,
+        impl: (...args: Value[]) => {
+            return { typ: Type.BoolType, value: args[0].typ === Type.NilType };
+        },
+    }],
+]);
+
 class VM {
+    debug: boolean;
     program: DataView;
     pc: number;
     stack: Value[];
-    debug: boolean;
+    heap: Closure[];
     globals: Value[];
     nil: Value;
 
@@ -22,9 +105,19 @@ class VM {
         this.program = program;
         this.pc = 0;
         this.stack = [];
-        this.globals = [];
+        this.globals = new Array(NUM_BUILT_INS);
+        for (const [name, fn] of BUILT_IN_FNS) {
+            const ref: BuiltInFnRef = {
+                typ: Type.BuiltInFnType,
+                arity: fn.arity,
+                name: fn.name,
+            };
+            this.globals[BUILT_INS[name]] = ref;
+        }
+        this.globals[BUILT_INS["nil"]] = { typ: Type.NilType };
         this.debug = debug;
         this.nil = { typ: Type.NilType };
+        this.heap = [];
     }
 
     error(message: string) {
