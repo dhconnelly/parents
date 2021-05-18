@@ -73,6 +73,32 @@ export type SizedInstr = {
     readonly size: number;
 };
 
+type FixedSizeInstrOpcode =
+    | Opcode.Pop
+    | Opcode.Get
+    | Opcode.DefGlobal
+    | Opcode.GetGlobal
+    | Opcode.JmpIf
+    | Opcode.Jmp
+    | Opcode.Call
+    | Opcode.Return
+    | Opcode.MakeLambda;
+
+function fixedInstrSizes(op: FixedSizeInstrOpcode): number {
+    // prettier-ignore
+    switch (op) {
+        case Opcode.Pop: return 1;
+        case Opcode.Get: return 9;
+        case Opcode.DefGlobal: return 1;
+        case Opcode.GetGlobal: return 5;
+        case Opcode.JmpIf: return 5;
+        case Opcode.Jmp: return 5;
+        case Opcode.Call: return 5;
+        case Opcode.Return: return 1;
+        case Opcode.MakeLambda: return 13;
+    }
+}
+
 // bytecode format:
 // - variable-length instructions
 // - many are one byte, unless they carry a value
@@ -89,19 +115,19 @@ export function writeInstr(instr: Instr, data: number[]): SizedInstr {
         case Opcode.JmpIf: {
             const bytes = serializeNumber(instr.pc);
             data.push(...bytes);
-            return { instr, size: 5 };
+            return { instr, size: fixedInstrSizes(instr.op) };
         }
 
         case Opcode.Get: {
             data.push(...serializeNumber(instr.frameDist));
             data.push(...serializeNumber(instr.index));
-            return { instr, size: 5 };
+            return { instr, size: fixedInstrSizes(instr.op) };
         }
 
         case Opcode.GetGlobal: {
             const bytes = serializeNumber(instr.index);
             data.push(...bytes);
-            return { instr, size: 5 };
+            return { instr, size: fixedInstrSizes(instr.op) };
         }
 
         case Opcode.Push: {
@@ -112,18 +138,18 @@ export function writeInstr(instr: Instr, data: number[]): SizedInstr {
 
         case Opcode.Call:
             data.push(...serializeNumber(instr.arity));
-            return { instr, size: 5 };
+            return { instr, size: fixedInstrSizes(instr.op) };
 
         case Opcode.Return:
         case Opcode.DefGlobal:
         case Opcode.Pop:
-            return { instr, size: 1 };
+            return { instr, size: fixedInstrSizes(instr.op) };
 
         case Opcode.MakeLambda: {
             data.push(...serializeNumber(instr.pc));
             data.push(...serializeNumber(instr.arity));
             data.push(...serializeNumber(instr.captures));
-            return { instr, size: 13 };
+            return { instr, size: fixedInstrSizes(instr.op) };
         }
     }
 }
@@ -138,37 +164,43 @@ export function readInstr(bytes: DataView, at: number): SizedInstr {
 
         case Opcode.GetGlobal: {
             const index = bytes.getInt32(at + 1);
-            return { instr: { op, index }, size: 5 };
+            return { instr: { op, index }, size: fixedInstrSizes(op) };
         }
 
         case Opcode.Jmp:
         case Opcode.JmpIf: {
             const pc = bytes.getInt32(at + 1);
-            return { instr: { op, pc }, size: 5 };
+            return { instr: { op, pc }, size: fixedInstrSizes(op) };
         }
 
         case Opcode.Call: {
             const arity = bytes.getInt32(at + 1);
-            return { instr: { op, arity }, size: 5 };
+            return { instr: { op, arity }, size: fixedInstrSizes(op) };
         }
 
         case Opcode.Get: {
             const frameDist = bytes.getInt32(at + 1);
             const index = bytes.getInt32(at + 5);
-            return { instr: { op, frameDist, index }, size: 9 };
+            return {
+                instr: { op, frameDist, index },
+                size: fixedInstrSizes(op),
+            };
         }
 
         case Opcode.MakeLambda: {
             const pc = bytes.getInt32(at + 1);
             const arity = bytes.getInt32(at + 5);
             const captures = bytes.getInt32(at + 9);
-            return { instr: { op, pc, arity, captures }, size: 13 };
+            return {
+                instr: { op, pc, arity, captures },
+                size: fixedInstrSizes(op),
+            };
         }
 
         case Opcode.Return:
         case Opcode.DefGlobal:
         case Opcode.Pop:
-            return { instr: { op }, size: 1 };
+            return { instr: { op }, size: fixedInstrSizes(op) };
 
         default:
             throw new Error(`invalid opcode ${op} at byte ${at}`);
