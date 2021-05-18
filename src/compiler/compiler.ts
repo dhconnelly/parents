@@ -1,7 +1,8 @@
 import { Expr, printExpr, Prog } from "../ast";
-import { SerializableValue, serializeNumber, Type, Value } from "../values";
+import { SerializableValue, serializeNumber } from "../serializable_value";
 import { Instr, Opcode, writeInstr, BUILT_INS } from "../instr";
 import { Result, Ok, Err } from "../util";
+import { Type } from "../types";
 
 type Ref = GlobalRef | StackRef;
 

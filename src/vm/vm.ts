@@ -1,6 +1,7 @@
-import { Type, Value, getInt, print, getBool } from "../values";
+import { Value, getInt, print, getBool } from "../values";
 import { Opcode, printInstr, readInstr } from "../instr";
 import { Option, unwrap } from "../util";
+import { Type } from "../types";
 
 export class ExecutionError extends Error {
     constructor(message: string) {

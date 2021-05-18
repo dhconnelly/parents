@@ -2,15 +2,9 @@ import { strict as assert } from "assert";
 
 import { Prog, Expr, IdentExpr, IfExpr, CallExpr, LambdaExpr } from "../ast";
 import { installBuiltIns } from "./builtins";
-import {
-    Value,
-    Type,
-    BoolValue,
-    FnValue,
-    BuiltInFnValue,
-    IntValue,
-    NilValue,
-} from "../values";
+import { Value, FnValue, BuiltInFnValue } from "../values";
+import { BoolValue, IntValue, NilValue } from "../serializable_value";
+import { Type } from "../types";
 import { Scope } from "./scope";
 import { Err, Ok, Result } from "../util";
 

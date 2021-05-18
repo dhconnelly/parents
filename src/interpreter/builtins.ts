@@ -1,6 +1,7 @@
 import { Option } from "src/util";
 import { Expr, printExpr } from "../ast";
-import { Type, Value, print } from "../values";
+import { Value, print } from "../values";
+import { Type } from "../types";
 import { Evaluator } from "./evaluator";
 
 export function installBuiltIns(evaluator: Evaluator) {
