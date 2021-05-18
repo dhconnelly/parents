@@ -13,7 +13,6 @@ export type BuiltInFn = {
 };
 
 export type Closure = {
-    name?: string;
     arity: number;
     captures: Value[];
     pc: number;
@@ -27,7 +26,6 @@ export type BuiltInFnRef = {
 
 export type ClosureRef = {
     typ: Type.FnType;
-    name?: string;
     heapIndex: number;
     arity: number;
 };
@@ -48,12 +46,18 @@ export function getBool(value: Value): boolean {
     return value.value;
 }
 
+export function getFn(value: Value): BuiltInFnRef | ClosureRef {
+    if (value.typ !== Type.BuiltInFnType && value.typ !== Type.FnType) {
+        throw new TypeCheckError(Type.FnType, value.typ);
+    }
+    return value;
+}
+
 export function print(value: Value): string {
+    // prettier-ignore
     switch (value.typ) {
-        case Type.BuiltInFnType:
-            return `<built-in-fn ${value.name}>`;
-        case Type.FnType:
-            return value.name ? `<fn ${value.name}>` : "<anonymous fn>";
+        case Type.BuiltInFnType: return `<built-in-fn ${value.name}>`;
+        case Type.FnType: return `<compiled-fn>`;
         case Type.BoolType:
         case Type.IntType:
         case Type.NilType:

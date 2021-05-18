@@ -5,7 +5,7 @@ import {
     printInstr,
     readInstr,
 } from "../instr";
-import { Option, unwrap } from "../util";
+import { Err, Ok, Option, Result, unwrap } from "../util";
 import { Type } from "../types";
 import {
     print,
@@ -15,6 +15,8 @@ import {
     getBool,
     BuiltInFnRef,
     BuiltInFn,
+    getFn,
+    ClosureRef,
 } from "./values";
 
 export class ExecutionError extends Error {
@@ -26,7 +28,7 @@ export class ExecutionError extends Error {
 // prettier-ignore
 const BUILT_IN_FNS: Map<keyof typeof BUILT_INS, BuiltInFn> = new Map([
     ["+", {
-        name: "add",
+        name: "+",
         arity: 2,
         impl: (...args: Value[]) => {
             return { typ: Type.IntType, value: getInt(args[0]) + getInt(args[1]) };
@@ -34,7 +36,7 @@ const BUILT_IN_FNS: Map<keyof typeof BUILT_INS, BuiltInFn> = new Map([
     }],
 
     ["-", {
-        name: "sub",
+        name: "-",
         arity: 2,
         impl: (...args: Value[]) => {
             return { typ: Type.IntType, value: getInt(args[0]) - getInt(args[1]) };
@@ -42,7 +44,7 @@ const BUILT_IN_FNS: Map<keyof typeof BUILT_INS, BuiltInFn> = new Map([
     }],
 
     ["<", {
-        name: "lt",
+        name: "<",
         arity: 2,
         impl: (...args: Value[]) => {
             return { typ: Type.BoolType, value: getInt(args[0]) < getInt(args[1]) };
@@ -50,10 +52,22 @@ const BUILT_IN_FNS: Map<keyof typeof BUILT_INS, BuiltInFn> = new Map([
     }],
 
     ["=", {
-        name: "eq",
+        name: "=",
         arity: 2,
         impl: (...args: Value[]) => {
-            return { typ: Type.BoolType, value: getInt(args[0]) === getInt(args[1]) };
+            const x = args[0];
+            let value;
+            switch (x.typ) {
+                case Type.BoolType:
+                    value = getBool(args[1]) === x.value;
+                    break;
+                case Type.IntType:
+                    value = getInt(args[1]) === x.value;
+                    break;
+                default:
+                    throw new ExecutionError(`invalid arg for =: ${x.typ}`);
+            }
+            return { typ: Type.BoolType, value };
         },
     }],
 
@@ -61,7 +75,8 @@ const BUILT_IN_FNS: Map<keyof typeof BUILT_INS, BuiltInFn> = new Map([
         name: "assert",
         arity: 1,
         impl: (...args: Value[]) => {
-            if (!getBool(args[0])) throw new ExecutionError("assertion failed");
+            // TODO: use source information to improve this message
+            if (!getBool(args[0])) console.log("assertion failed");
             return { typ: Type.NilType };
         },
     }],
@@ -76,7 +91,7 @@ const BUILT_IN_FNS: Map<keyof typeof BUILT_INS, BuiltInFn> = new Map([
     }],
 
     ["*", {
-        name: "mul",
+        name: "*",
         arity: 2,
         impl: (...args: Value[]) => {
             return { typ: Type.IntType, value: getInt(args[0]) * getInt(args[1]) };
@@ -91,6 +106,12 @@ const BUILT_IN_FNS: Map<keyof typeof BUILT_INS, BuiltInFn> = new Map([
         },
     }],
 ]);
+const BUILT_INS_LOOKUP: Map<string, BuiltInFn> = BUILT_IN_FNS;
+
+type StackFrame = {
+    stackBase: number;
+    returnAddress: number;
+};
 
 class VM {
     debug: boolean;
@@ -100,6 +121,7 @@ class VM {
     heap: Closure[];
     globals: Value[];
     nil: Value;
+    frames: StackFrame[];
 
     constructor(program: DataView, debug: boolean = false) {
         this.program = program;
@@ -118,9 +140,10 @@ class VM {
         this.debug = debug;
         this.nil = { typ: Type.NilType };
         this.heap = [];
+        this.frames = [];
     }
 
-    error(message: string) {
+    error(message: string): never {
         throw new ExecutionError(`execution error: pc=${this.pc}: ${message}`);
     }
 
@@ -131,8 +154,56 @@ class VM {
         return unwrap(this.stack.pop());
     }
 
+    popN(n: number): Value[] {
+        const values = new Array(n);
+        for (let i = 0; i < n; i++) {
+            values[i] = this.popStack();
+        }
+        return values;
+    }
+
     log() {
-        console.log(`[pc=${this.pc}] [stack=${JSON.stringify(this.stack)}]`);
+        console.log(`[pc=${this.pc}]
+            [frames=${JSON.stringify(this.frames)}]
+            [stack=${JSON.stringify(this.stack)}]
+            [heap=${JSON.stringify(this.heap)}]
+        `);
+    }
+
+    callBuiltIn(ref: BuiltInFnRef) {
+        const fn = BUILT_INS_LOOKUP.get(ref.name);
+        if (fn === undefined) {
+            this.error(`undefined: ${ref.name}`);
+        }
+        if (fn.arity !== ref.arity) {
+            this.error(`${fn.name} wants ${fn.arity} args, got ${ref.arity}`);
+        }
+        const args = this.popN(fn.arity);
+        args.reverse();
+        try {
+            const result = fn.impl(...args);
+            this.stack.push(result);
+        } catch (err) {
+            if (err instanceof ExecutionError) {
+                this.error(err.message);
+            } else {
+                throw err;
+            }
+        }
+    }
+
+    call(ref: ClosureRef, returnAddress: number) {
+        const fn: Closure = this.heap[ref.heapIndex];
+        if (fn.arity !== ref.arity) {
+            this.error(`function wants ${fn.arity} args, got ${ref.arity}`);
+        }
+        this.frames.push({
+            stackBase: this.stack.length - ref.arity,
+            returnAddress,
+        });
+        this.stack.push(ref);
+        fn.captures.forEach((cap) => this.stack.push(cap));
+        this.pc = fn.pc;
     }
 
     step() {
@@ -143,27 +214,40 @@ class VM {
             console.log();
         }
         switch (instr.op) {
-            case Opcode.Push:
+            case Opcode.Push: {
                 this.stack.push(instr.value);
                 this.pc += size;
                 break;
+            }
 
-            case Opcode.Pop:
+            case Opcode.Pop: {
                 this.popStack();
                 this.pc += size;
                 break;
+            }
 
-            case Opcode.JmpIf:
+            case Opcode.Get: {
+                const frameIndex = this.frames.length - 1 - instr.frameDist;
+                const frame = this.frames[frameIndex];
+                const value = this.stack[frame.stackBase + instr.index];
+                this.stack.push(value);
+                this.pc += size;
+                break;
+            }
+
+            case Opcode.JmpIf: {
                 if (getBool(this.popStack())) {
                     this.pc = instr.pc;
                 } else {
                     this.pc += size;
                 }
                 break;
+            }
 
-            case Opcode.Jmp:
+            case Opcode.Jmp: {
                 this.pc = instr.pc;
                 break;
+            }
 
             case Opcode.DefGlobal: {
                 this.globals.push(this.popStack());
@@ -172,24 +256,55 @@ class VM {
                 break;
             }
 
-            case Opcode.MakeLambda:
-            case Opcode.Get:
-            case Opcode.Return:
-            case Opcode.Call: {
-                throw new Error();
-            }
-
             case Opcode.GetGlobal: {
                 if (instr.index >= this.globals.length) {
-                    throw new ExecutionError("invalid global reference");
+                    this.error("invalid global reference");
                 }
                 this.stack.push(this.globals[instr.index]);
                 this.pc += size;
                 break;
             }
 
-            default:
-                const __fail: never = instr;
+            case Opcode.MakeLambda: {
+                const caps = this.popN(instr.captures);
+                caps.reverse();
+                this.stack.push({
+                    typ: Type.FnType,
+                    arity: instr.arity,
+                    heapIndex: this.heap.length,
+                });
+                this.heap.push({
+                    arity: instr.arity,
+                    captures: caps,
+                    pc: instr.pc,
+                });
+                this.pc += size;
+                break;
+            }
+
+            case Opcode.Return: {
+                const value = this.popStack();
+                const frame = this.frames[this.frames.length - 1];
+                this.stack.length = frame.stackBase;
+                this.pc = frame.returnAddress;
+                this.frames.pop();
+                this.stack.push(value);
+                break;
+            }
+
+            case Opcode.Call: {
+                const fn = getFn(this.popStack());
+                // prettier-ignore
+                switch (fn.typ) {
+                    case Type.BuiltInFnType:
+                        this.callBuiltIn(fn);
+                        this.pc += size;
+                        break;
+                    case Type.FnType:
+                        this.call(fn, this.pc + size);
+                        break;
+                }
+            }
         }
     }
 
@@ -200,9 +315,18 @@ class VM {
     }
 }
 
-export function execute(bytes: Uint8Array) {
+export function execute(bytes: Uint8Array): Result<null, ExecutionError> {
     const vm = new VM(
         new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength)
     );
-    vm.run();
+    try {
+        vm.run();
+        return Ok(null);
+    } catch (err) {
+        if (err instanceof ExecutionError) {
+            return Err(err);
+        } else {
+            throw err;
+        }
+    }
 }

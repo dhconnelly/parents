@@ -102,13 +102,13 @@ class Compiler {
                 const lambdaStart = this.bytes.length;
                 this.locals.push(new Map());
                 this.captures.push([]);
-                this.locals[this.locals.length - 1].set(
-                    expr.name || "",
-                    this.locals.length - 1
-                );
                 for (let i = 0; i < expr.params.length; i++) {
                     this.locals[this.locals.length - 1].set(expr.params[i], i);
                 }
+                this.locals[this.locals.length - 1].set(
+                    expr.name || "",
+                    this.locals.length
+                );
                 this.compile(expr.body);
                 this.push({ op: Opcode.Return });
 
@@ -119,7 +119,11 @@ class Compiler {
                 for (const { frameDist, index } of this.captures[
                     this.captures.length - 1
                 ]) {
-                    this.push({ op: Opcode.Get, frameDist, index });
+                    this.push({
+                        op: Opcode.Get,
+                        frameDist: frameDist - 1,
+                        index,
+                    });
                 }
                 this.push({
                     op: Opcode.MakeLambda,

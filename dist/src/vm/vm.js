@@ -14,39 +14,52 @@ exports.ExecutionError = ExecutionError;
 // prettier-ignore
 const BUILT_IN_FNS = new Map([
     ["+", {
-            name: "add",
+            name: "+",
             arity: 2,
             impl: (...args) => {
                 return { typ: types_1.Type.IntType, value: values_1.getInt(args[0]) + values_1.getInt(args[1]) };
             },
         }],
     ["-", {
-            name: "sub",
+            name: "-",
             arity: 2,
             impl: (...args) => {
                 return { typ: types_1.Type.IntType, value: values_1.getInt(args[0]) - values_1.getInt(args[1]) };
             },
         }],
     ["<", {
-            name: "lt",
+            name: "<",
             arity: 2,
             impl: (...args) => {
                 return { typ: types_1.Type.BoolType, value: values_1.getInt(args[0]) < values_1.getInt(args[1]) };
             },
         }],
     ["=", {
-            name: "eq",
+            name: "=",
             arity: 2,
             impl: (...args) => {
-                return { typ: types_1.Type.BoolType, value: values_1.getInt(args[0]) === values_1.getInt(args[1]) };
+                const x = args[0];
+                let value;
+                switch (x.typ) {
+                    case types_1.Type.BoolType:
+                        value = values_1.getBool(args[1]) === x.value;
+                        break;
+                    case types_1.Type.IntType:
+                        value = values_1.getInt(args[1]) === x.value;
+                        break;
+                    default:
+                        throw new ExecutionError(`invalid arg for =: ${x.typ}`);
+                }
+                return { typ: types_1.Type.BoolType, value };
             },
         }],
     ["assert", {
             name: "assert",
             arity: 1,
             impl: (...args) => {
+                // TODO: use source information to improve this message
                 if (!values_1.getBool(args[0]))
-                    throw new ExecutionError("assertion failed");
+                    console.log("assertion failed");
                 return { typ: types_1.Type.NilType };
             },
         }],
@@ -59,7 +72,7 @@ const BUILT_IN_FNS = new Map([
             },
         }],
     ["*", {
-            name: "mul",
+            name: "*",
             arity: 2,
             impl: (...args) => {
                 return { typ: types_1.Type.IntType, value: values_1.getInt(args[0]) * values_1.getInt(args[1]) };
@@ -73,6 +86,7 @@ const BUILT_IN_FNS = new Map([
             },
         }],
 ]);
+const BUILT_INS_LOOKUP = BUILT_IN_FNS;
 class VM {
     constructor(program, debug = false) {
         this.program = program;
@@ -91,6 +105,7 @@ class VM {
         this.debug = debug;
         this.nil = { typ: types_1.Type.NilType };
         this.heap = [];
+        this.frames = [];
     }
     error(message) {
         throw new ExecutionError(`execution error: pc=${this.pc}: ${message}`);
@@ -101,8 +116,57 @@ class VM {
         }
         return util_1.unwrap(this.stack.pop());
     }
+    popN(n) {
+        const values = new Array(n);
+        for (let i = 0; i < n; i++) {
+            values[i] = this.popStack();
+        }
+        return values;
+    }
     log() {
-        console.log(`[pc=${this.pc}] [stack=${JSON.stringify(this.stack)}]`);
+        console.log(`[pc=${this.pc}]
+            [stack=${JSON.stringify(this.stack)}]
+            [heap=${JSON.stringify(this.heap)}]
+        `);
+    }
+    callBuiltIn(ref) {
+        const fn = BUILT_INS_LOOKUP.get(ref.name);
+        if (fn === undefined) {
+            this.error(`undefined: ${ref.name}`);
+        }
+        if (fn.arity !== ref.arity) {
+            this.error(`${fn.name} wants ${fn.arity} args, got ${ref.arity}`);
+        }
+        const args = this.popN(fn.arity);
+        args.reverse();
+        try {
+            const result = fn.impl(...args);
+            this.stack.push(result);
+        }
+        catch (err) {
+            if (err instanceof ExecutionError) {
+                this.error(err.message);
+            }
+            else {
+                throw err;
+            }
+        }
+    }
+    call(ref) {
+        this.frames.push({
+            stackBase: this.stack.length,
+            returnAddress: this.pc + 1,
+        });
+        const fn = this.heap[ref.heapIndex];
+        if (fn.arity !== ref.arity) {
+            this.error(`function wants ${fn.arity} args, got ${ref.arity}`);
+        }
+        const args = this.popN(fn.arity);
+        args.reverse();
+        args.forEach((arg) => this.stack.push(arg));
+        this.stack.push(ref);
+        fn.captures.forEach((cap) => this.stack.push(cap));
+        this.pc = fn.pc;
     }
     step() {
         const { instr, size } = instr_1.readInstr(this.program, this.pc);
@@ -112,28 +176,24 @@ class VM {
             console.log();
         }
         switch (instr.op) {
-            case instr_1.Opcode.Push:
+            case instr_1.Opcode.Push: {
                 this.stack.push(instr.value);
                 this.pc += size;
                 break;
-            case instr_1.Opcode.Pop:
+            }
+            case instr_1.Opcode.Pop: {
                 this.popStack();
                 this.pc += size;
                 break;
-            case instr_1.Opcode.Assert: {
-                const value = values_1.getBool(this.popStack());
-                if (!value)
-                    console.log("assertion failed");
-                this.stack.push({ typ: types_1.Type.NilType });
-                this.pc += size;
+            }
+            case instr_1.Opcode.Get: {
+                const frameIndex = this.frames.length - 1 - instr.frameDist;
+                const frame = this.frames[frameIndex];
+                const value = this.stack[frame.stackBase + instr.index];
+                this.stack.push(value);
                 break;
             }
-            case instr_1.Opcode.Display:
-                console.log(values_1.print(this.popStack()));
-                this.stack.push({ typ: types_1.Type.NilType });
-                this.pc += size;
-                break;
-            case instr_1.Opcode.JmpIf:
+            case instr_1.Opcode.JmpIf: {
                 if (values_1.getBool(this.popStack())) {
                     this.pc = instr.pc;
                 }
@@ -141,32 +201,63 @@ class VM {
                     this.pc += size;
                 }
                 break;
-            case instr_1.Opcode.Jmp:
+            }
+            case instr_1.Opcode.Jmp: {
                 this.pc = instr.pc;
                 break;
+            }
             case instr_1.Opcode.DefGlobal: {
                 this.globals.push(this.popStack());
                 this.stack.push(this.nil);
                 this.pc += size;
                 break;
             }
-            case instr_1.Opcode.IsNil:
-            case instr_1.Opcode.MakeLambda:
-            case instr_1.Opcode.GetStack:
-            case instr_1.Opcode.Return:
-            case instr_1.Opcode.Call: {
-                throw new Error();
-            }
             case instr_1.Opcode.GetGlobal: {
                 if (instr.index >= this.globals.length) {
-                    throw new ExecutionError("invalid global reference");
+                    this.error("invalid global reference");
                 }
                 this.stack.push(this.globals[instr.index]);
                 this.pc += size;
                 break;
             }
-            default:
-                const __fail = instr;
+            case instr_1.Opcode.MakeLambda: {
+                this.stack.push({
+                    typ: types_1.Type.FnType,
+                    arity: instr.arity,
+                    heapIndex: this.heap.length,
+                });
+                const caps = this.popN(instr.captures);
+                caps.reverse();
+                this.heap.push({
+                    arity: instr.arity,
+                    captures: caps,
+                    pc: instr.pc,
+                });
+                this.pc += size;
+                break;
+            }
+            case instr_1.Opcode.Return: {
+                const value = this.popStack();
+                const frame = this.frames[this.frames.length - 1];
+                this.stack.length = frame.stackBase;
+                this.pc = frame.returnAddress;
+                this.frames.pop();
+                this.stack.push(value);
+                break;
+            }
+            case instr_1.Opcode.Call: {
+                const fn = values_1.getFn(this.popStack());
+                // prettier-ignore
+                switch (fn.typ) {
+                    case types_1.Type.BuiltInFnType:
+                        this.callBuiltIn(fn);
+                        this.pc += size;
+                        break;
+                    case types_1.Type.FnType:
+                        this.call(fn);
+                        break;
+                }
+            }
         }
     }
     run() {
@@ -176,7 +267,18 @@ class VM {
     }
 }
 function execute(bytes) {
-    const vm = new VM(new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength));
-    vm.run();
+    const vm = new VM(new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength), true);
+    try {
+        vm.run();
+        return util_1.Ok(null);
+    }
+    catch (err) {
+        if (err instanceof ExecutionError) {
+            return util_1.Err(err);
+        }
+        else {
+            throw err;
+        }
+    }
 }
 exports.execute = execute;

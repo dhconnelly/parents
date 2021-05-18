@@ -19,21 +19,15 @@ var Opcode;
 (function (Opcode) {
     Opcode[Opcode["Push"] = 1] = "Push";
     Opcode[Opcode["Pop"] = 2] = "Pop";
-    Opcode[Opcode["Assert"] = 7] = "Assert";
-    Opcode[Opcode["Display"] = 8] = "Display";
-    Opcode[Opcode["JmpIf"] = 9] = "JmpIf";
-    Opcode[Opcode["Jmp"] = 10] = "Jmp";
-    Opcode[Opcode["DefGlobal"] = 11] = "DefGlobal";
-    Opcode[Opcode["GetGlobal"] = 12] = "GetGlobal";
-    Opcode[Opcode["Call"] = 14] = "Call";
-    Opcode[Opcode["Return"] = 15] = "Return";
-    Opcode[Opcode["GetStack"] = 16] = "GetStack";
-    Opcode[Opcode["MakeLambda"] = 17] = "MakeLambda";
-    Opcode[Opcode["IsNil"] = 19] = "IsNil";
+    Opcode[Opcode["Get"] = 3] = "Get";
+    Opcode[Opcode["DefGlobal"] = 4] = "DefGlobal";
+    Opcode[Opcode["GetGlobal"] = 5] = "GetGlobal";
+    Opcode[Opcode["JmpIf"] = 6] = "JmpIf";
+    Opcode[Opcode["Jmp"] = 7] = "Jmp";
+    Opcode[Opcode["Call"] = 8] = "Call";
+    Opcode[Opcode["Return"] = 9] = "Return";
+    Opcode[Opcode["MakeLambda"] = 10] = "MakeLambda";
 })(Opcode = exports.Opcode || (exports.Opcode = {}));
-function cannot(x) {
-    throw new Error("never");
-}
 // bytecode format:
 // - variable-length instructions
 // - many are one byte, unless they carry a value
@@ -52,7 +46,7 @@ function writeInstr(instr, data) {
             data.push(...bytes);
             return { instr, size: 5 };
         }
-        case Opcode.GetStack: {
+        case Opcode.Get: {
             data.push(...values_1.serializeNumber(instr.frameDist));
             data.push(...values_1.serializeNumber(instr.index));
             return { instr, size: 5 };
@@ -70,12 +64,9 @@ function writeInstr(instr, data) {
         case Opcode.Call:
             data.push(...values_1.serializeNumber(instr.arity));
             return { instr, size: 5 };
-        case Opcode.IsNil:
         case Opcode.Return:
         case Opcode.DefGlobal:
         case Opcode.Pop:
-        case Opcode.Assert:
-        case Opcode.Display:
             return { instr, size: 1 };
         case Opcode.MakeLambda: {
             data.push(...values_1.serializeNumber(instr.pc));
@@ -83,8 +74,6 @@ function writeInstr(instr, data) {
             data.push(...values_1.serializeNumber(instr.captures));
             return { instr, size: 13 };
         }
-        default:
-            cannot(instr);
     }
 }
 exports.writeInstr = writeInstr;
@@ -108,7 +97,7 @@ function readInstr(bytes, at) {
             const arity = bytes.getInt32(at + 1);
             return { instr: { op, arity }, size: 5 };
         }
-        case Opcode.GetStack: {
+        case Opcode.Get: {
             const frameDist = bytes.getInt32(at + 1);
             const index = bytes.getInt32(at + 5);
             return { instr: { op, frameDist, index }, size: 9 };
@@ -119,12 +108,9 @@ function readInstr(bytes, at) {
             const captures = bytes.getInt32(at + 9);
             return { instr: { op, pc, arity, captures }, size: 13 };
         }
-        case Opcode.IsNil:
         case Opcode.Return:
         case Opcode.DefGlobal:
         case Opcode.Pop:
-        case Opcode.Assert:
-        case Opcode.Display:
             return { instr: { op }, size: 1 };
         default:
             throw new Error(`invalid opcode ${op} at byte ${at}`);
@@ -138,20 +124,14 @@ function printInstr(instr) {
         case Opcode.Jmp: return `jmp ${instr.pc}`;
         case Opcode.JmpIf: return `jmp_if ${instr.pc}`;
         case Opcode.Pop: return "pop";
-        case Opcode.IsNil: return "isnil";
-        case Opcode.Assert: return "assert";
-        case Opcode.Display: return "display";
         case Opcode.DefGlobal: return `def_global`;
         case Opcode.GetGlobal: return `get_global ${instr.index}`;
         case Opcode.Call: return `call arity=${instr.arity}`;
         case Opcode.Return: return "return";
-        case Opcode.GetStack:
+        case Opcode.Get:
             return `get_stack frame=${instr.frameDist} index=${instr.index}`;
         case Opcode.MakeLambda:
             return `make_lambda pc=${instr.pc} arity=${instr.arity} captures=${instr.captures}`;
-        default:
-            const __fail = instr;
-            throw new Error();
     }
 }
 exports.printInstr = printInstr;
