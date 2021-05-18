@@ -116,6 +116,13 @@ class VM {
         }
         return util_1.unwrap(this.stack.pop());
     }
+    pushStack(value) {
+        if (value === null) {
+            this.log();
+            util_1.fail("pushing null value!");
+        }
+        this.stack.push(value);
+    }
     popN(n) {
         const values = new Array(n);
         for (let i = 0; i < n; i++) {
@@ -125,8 +132,9 @@ class VM {
     }
     log() {
         console.log(`[pc=${this.pc}]
-            [stack=${JSON.stringify(this.stack)}]
-            [heap=${JSON.stringify(this.heap)}]
+            frames=${JSON.stringify(this.frames)}
+            stack=${JSON.stringify(this.stack)}
+            heap=${JSON.stringify(this.heap)}
         `);
     }
     callBuiltIn(ref) {
@@ -141,7 +149,7 @@ class VM {
         args.reverse();
         try {
             const result = fn.impl(...args);
-            this.stack.push(result);
+            this.pushStack(result);
         }
         catch (err) {
             if (err instanceof ExecutionError) {
@@ -152,20 +160,17 @@ class VM {
             }
         }
     }
-    call(ref) {
-        this.frames.push({
-            stackBase: this.stack.length,
-            returnAddress: this.pc + 1,
-        });
+    call(ref, returnAddress) {
         const fn = this.heap[ref.heapIndex];
         if (fn.arity !== ref.arity) {
             this.error(`function wants ${fn.arity} args, got ${ref.arity}`);
         }
-        const args = this.popN(fn.arity);
-        args.reverse();
-        args.forEach((arg) => this.stack.push(arg));
-        this.stack.push(ref);
-        fn.captures.forEach((cap) => this.stack.push(cap));
+        this.frames.push({
+            stackBase: this.stack.length - ref.arity,
+            returnAddress,
+        });
+        this.pushStack(ref);
+        fn.captures.forEach((cap) => this.pushStack(cap));
         this.pc = fn.pc;
     }
     step() {
@@ -177,7 +182,7 @@ class VM {
         }
         switch (instr.op) {
             case instr_1.Opcode.Push: {
-                this.stack.push(instr.value);
+                this.pushStack(instr.value);
                 this.pc += size;
                 break;
             }
@@ -187,10 +192,11 @@ class VM {
                 break;
             }
             case instr_1.Opcode.Get: {
-                const frameIndex = this.frames.length - 1 - instr.frameDist;
-                const frame = this.frames[frameIndex];
-                const value = this.stack[frame.stackBase + instr.index];
-                this.stack.push(value);
+                const top = this.frames[this.frames.length - 1];
+                const stackBase = top === undefined ? 0 : top.stackBase;
+                const value = this.stack[stackBase + instr.index];
+                this.pushStack(value);
+                this.pc += size;
                 break;
             }
             case instr_1.Opcode.JmpIf: {
@@ -208,7 +214,7 @@ class VM {
             }
             case instr_1.Opcode.DefGlobal: {
                 this.globals.push(this.popStack());
-                this.stack.push(this.nil);
+                this.pushStack(this.nil);
                 this.pc += size;
                 break;
             }
@@ -216,18 +222,18 @@ class VM {
                 if (instr.index >= this.globals.length) {
                     this.error("invalid global reference");
                 }
-                this.stack.push(this.globals[instr.index]);
+                this.pushStack(this.globals[instr.index]);
                 this.pc += size;
                 break;
             }
             case instr_1.Opcode.MakeLambda: {
-                this.stack.push({
+                const caps = this.popN(instr.captures);
+                caps.reverse();
+                this.pushStack({
                     typ: types_1.Type.FnType,
                     arity: instr.arity,
                     heapIndex: this.heap.length,
                 });
-                const caps = this.popN(instr.captures);
-                caps.reverse();
                 this.heap.push({
                     arity: instr.arity,
                     captures: caps,
@@ -242,7 +248,7 @@ class VM {
                 this.stack.length = frame.stackBase;
                 this.pc = frame.returnAddress;
                 this.frames.pop();
-                this.stack.push(value);
+                this.pushStack(value);
                 break;
             }
             case instr_1.Opcode.Call: {
@@ -254,7 +260,7 @@ class VM {
                         this.pc += size;
                         break;
                     case types_1.Type.FnType:
-                        this.call(fn);
+                        this.call(fn, this.pc + size);
                         break;
                 }
             }

@@ -1,6 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Err = exports.Ok = exports.Result = exports.hasValue = exports.unwrap = void 0;
+exports.Err = exports.Ok = exports.Result = exports.hasValue = exports.unwrap = exports.fail = void 0;
+function fail(msg) {
+    throw new Error(msg);
+}
+exports.fail = fail;
 function unwrap(x) {
     if (x === undefined)
         throw new Error("unwrap");

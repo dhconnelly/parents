@@ -54,6 +54,7 @@
 
 (assert (= 2 ((zero square) 2)))
 (assert (= 4 ((one square) 2)))
+(assert (= 4 ((one square) 2)))
 (assert (= 16 ((two square) 2)))
 (assert (= 256 ((three square) 2)))
 (assert (= 16 (((pred three) square) 2)))

@@ -58,7 +58,6 @@ type CallInstr = { readonly op: Opcode.Call; readonly arity: number };
 type ReturnInstr = { readonly op: Opcode.Return };
 type GetStackInstr = {
     readonly op: Opcode.Get;
-    readonly frameDist: number;
     readonly index: number;
 };
 type MakeLambdaInstr = {
@@ -88,7 +87,7 @@ function fixedInstrSizes(op: FixedSizeInstrOpcode): number {
     // prettier-ignore
     switch (op) {
         case Opcode.Pop: return 1;
-        case Opcode.Get: return 9;
+        case Opcode.Get: return 5;
         case Opcode.DefGlobal: return 1;
         case Opcode.GetGlobal: return 5;
         case Opcode.JmpIf: return 5;
@@ -119,7 +118,6 @@ export function writeInstr(instr: Instr, data: number[]): SizedInstr {
         }
 
         case Opcode.Get: {
-            data.push(...serializeNumber(instr.frameDist));
             data.push(...serializeNumber(instr.index));
             return { instr, size: fixedInstrSizes(instr.op) };
         }
@@ -179,10 +177,9 @@ export function readInstr(bytes: DataView, at: number): SizedInstr {
         }
 
         case Opcode.Get: {
-            const frameDist = bytes.getInt32(at + 1);
-            const index = bytes.getInt32(at + 5);
+            const index = bytes.getInt32(at + 1);
             return {
-                instr: { op, frameDist, index },
+                instr: { op, index },
                 size: fixedInstrSizes(op),
             };
         }
@@ -219,7 +216,7 @@ export function printInstr(instr: Instr): string {
         case Opcode.Call: return `call arity=${instr.arity}`;
         case Opcode.Return: return "return";
         case Opcode.Get:
-            return `get_stack frame=${instr.frameDist} index=${instr.index}`;
+            return `get_stack index=${instr.index}`;
         case Opcode.MakeLambda:
             return `make_lambda pc=${instr.pc} arity=${instr.arity} captures=${instr.captures}`;
     }

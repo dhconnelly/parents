@@ -1,3 +1,7 @@
+export function fail(msg: string): never {
+    throw new Error(msg);
+}
+
 export type Option<T> = T | undefined;
 
 export function unwrap<T>(x: Option<T>): T {

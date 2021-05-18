@@ -192,7 +192,7 @@ mocha_1.describe("compiler", function () {
         // prettier-ignore
         const expected = [
             /*  0 */ { op: instr_1.Opcode.Jmp, pc: 15 },
-            /*  5 */ { op: instr_1.Opcode.Get, frameDist: 0, index: 0 },
+            /*  5 */ { op: instr_1.Opcode.Get, index: 0 },
             /* 14 */ { op: instr_1.Opcode.Return },
             /* 12 */ { op: instr_1.Opcode.MakeLambda, pc: 5, arity: 1, captures: 0 },
             /* 25 */ { op: instr_1.Opcode.Pop },
@@ -204,7 +204,7 @@ mocha_1.describe("compiler", function () {
         // prettier-ignore
         const expected = [
             /*  0 */ { op: instr_1.Opcode.Jmp, pc: 15 },
-            /*  5 */ { op: instr_1.Opcode.Get, frameDist: 0, index: 0 },
+            /*  5 */ { op: instr_1.Opcode.Get, index: 0 },
             /* 14 */ { op: instr_1.Opcode.Return },
             /* 15 */ { op: instr_1.Opcode.MakeLambda, pc: 5, arity: 1, captures: 0 },
             /* 28 */ { op: instr_1.Opcode.DefGlobal },
@@ -225,7 +225,7 @@ mocha_1.describe("compiler", function () {
         const expected = [
             /*  0 */ { op: instr_1.Opcode.Push, value: { typ: types_1.Type.IntType, value: 3 } },
             /*  6 */ { op: instr_1.Opcode.Jmp, pc: 21 },
-            /* 11 */ { op: instr_1.Opcode.Get, frameDist: 0, index: 0 },
+            /* 11 */ { op: instr_1.Opcode.Get, index: 0 },
             /* 20 */ { op: instr_1.Opcode.Return },
             /* 21 */ { op: instr_1.Opcode.MakeLambda, pc: 11, arity: 1, captures: 0 },
             /* 34 */ { op: instr_1.Opcode.Call, arity: 1 },
@@ -238,7 +238,7 @@ mocha_1.describe("compiler", function () {
         // prettier-ignore
         const expected = [
             /*  0 */ { op: instr_1.Opcode.Jmp, pc: 15 },
-            /*  5 */ { op: instr_1.Opcode.Get, frameDist: 0, index: 0 },
+            /*  5 */ { op: instr_1.Opcode.Get, index: 0 },
             /* 14 */ { op: instr_1.Opcode.Return },
             /* 15 */ { op: instr_1.Opcode.MakeLambda, arity: 1, captures: 0, pc: 5 },
             /* 26 */ { op: instr_1.Opcode.Pop },
@@ -266,12 +266,12 @@ mocha_1.describe("compiler", function () {
         const expected = [
             /*  0 */ { op: instr_1.Opcode.Jmp, pc: 62 },
             /*  5 */ { op: instr_1.Opcode.Jmp, pc: 39 },
-            /* 10 */ { op: instr_1.Opcode.Get, frameDist: 0, index: 2 },
-            /* 19 */ { op: instr_1.Opcode.Get, frameDist: 0, index: 0 },
+            /* 10 */ { op: instr_1.Opcode.Get, index: 2 },
+            /* 19 */ { op: instr_1.Opcode.Get, index: 0 },
             /* 28 */ { op: instr_1.Opcode.GetGlobal, index: instr_1.BUILT_INS["+"] },
             /* 33 */ { op: instr_1.Opcode.Call, arity: 2 },
             /* 38 */ { op: instr_1.Opcode.Return },
-            /* 39 */ { op: instr_1.Opcode.Get, frameDist: 1, index: 0 },
+            /* 39 */ { op: instr_1.Opcode.Get, index: 0 },
             /* 48 */ { op: instr_1.Opcode.MakeLambda, arity: 1, captures: 1, pc: 10 },
             /* 61 */ { op: instr_1.Opcode.Return },
             /* 62 */ { op: instr_1.Opcode.MakeLambda, arity: 1, captures: 0, pc: 5 },
@@ -287,12 +287,12 @@ mocha_1.describe("compiler", function () {
             /*  6 */ { op: instr_1.Opcode.Jmp, pc: 79 },
             /* 11 */ { op: instr_1.Opcode.Push, value: { typ: types_1.Type.IntType, value: 5 } },
             /* 17 */ { op: instr_1.Opcode.Jmp, pc: 51 },
-            /* 22 */ { op: instr_1.Opcode.Get, frameDist: 0, index: 2 },
-            /* 27 */ { op: instr_1.Opcode.Get, frameDist: 0, index: 0 },
+            /* 22 */ { op: instr_1.Opcode.Get, index: 2 },
+            /* 27 */ { op: instr_1.Opcode.Get, index: 0 },
             /* 40 */ { op: instr_1.Opcode.GetGlobal, index: instr_1.BUILT_INS["+"] },
             /* 45 */ { op: instr_1.Opcode.Call, arity: 2 },
             /* 50 */ { op: instr_1.Opcode.Return },
-            /* 51 */ { op: instr_1.Opcode.Get, frameDist: 1, index: 0 },
+            /* 51 */ { op: instr_1.Opcode.Get, index: 0 },
             /* 60 */ { op: instr_1.Opcode.MakeLambda, arity: 1, captures: 1, pc: 22 },
             /* 73 */ { op: instr_1.Opcode.Call, arity: 1 },
             /* 78 */ { op: instr_1.Opcode.Return },
@@ -306,7 +306,7 @@ mocha_1.describe("compiler", function () {
         const instrs = compile("((lambda (f) (f 1)) (lambda (x) (+ x 1)))");
         const expected = [
             { op: instr_1.Opcode.Jmp, pc: 31 },
-            { op: instr_1.Opcode.Get, frameDist: 0, index: 0 },
+            { op: instr_1.Opcode.Get, index: 0 },
             { op: instr_1.Opcode.Push, value: { typ: types_1.Type.IntType, value: 1 } },
             { op: instr_1.Opcode.GetGlobal, index: instr_1.BUILT_INS["+"] },
             { op: instr_1.Opcode.Call, arity: 2 },
@@ -314,7 +314,7 @@ mocha_1.describe("compiler", function () {
             { op: instr_1.Opcode.MakeLambda, pc: 5, arity: 1, captures: 0 },
             { op: instr_1.Opcode.Jmp, pc: 70 },
             { op: instr_1.Opcode.Push, value: { typ: types_1.Type.IntType, value: 1 } },
-            { op: instr_1.Opcode.Get, frameDist: 0, index: 0 },
+            { op: instr_1.Opcode.Get, index: 0 },
             { op: instr_1.Opcode.Call, arity: 1 },
             { op: instr_1.Opcode.Return },
             { op: instr_1.Opcode.MakeLambda, pc: 49, arity: 1, captures: 0 },
@@ -333,17 +333,17 @@ mocha_1.describe("compiler", function () {
         `);
         const expected = [
             { op: instr_1.Opcode.Jmp, pc: 105 },
-            { op: instr_1.Opcode.Get, frameDist: 0, index: 0 },
+            { op: instr_1.Opcode.Get, index: 0 },
             { op: instr_1.Opcode.Push, value: { typ: types_1.Type.IntType, value: 0 } },
             { op: instr_1.Opcode.GetGlobal, index: instr_1.BUILT_INS["="] },
             { op: instr_1.Opcode.Call, arity: 2 },
             { op: instr_1.Opcode.JmpIf, pc: 98 },
-            { op: instr_1.Opcode.Get, frameDist: 0, index: 0 },
-            { op: instr_1.Opcode.Get, frameDist: 0, index: 0 },
+            { op: instr_1.Opcode.Get, index: 0 },
+            { op: instr_1.Opcode.Get, index: 0 },
             { op: instr_1.Opcode.Push, value: { typ: types_1.Type.IntType, value: 1 } },
             { op: instr_1.Opcode.GetGlobal, index: instr_1.BUILT_INS["-"] },
             { op: instr_1.Opcode.Call, arity: 2 },
-            { op: instr_1.Opcode.Get, frameDist: 0, index: 0 },
+            { op: instr_1.Opcode.Get, index: 1 },
             { op: instr_1.Opcode.Call, arity: 1 },
             { op: instr_1.Opcode.GetGlobal, index: instr_1.BUILT_INS["+"] },
             { op: instr_1.Opcode.Call, arity: 2 },

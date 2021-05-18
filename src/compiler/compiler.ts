@@ -1,7 +1,7 @@
 import { Expr, printExpr, Prog } from "../ast";
 import { SerializableValue, serializeNumber } from "../values";
 import { Instr, Opcode, writeInstr, BUILT_INS } from "../instr";
-import { Result, Ok, Err } from "../util";
+import { Result, Ok, Err, fail } from "../util";
 import { Type } from "../types";
 
 type Ref = GlobalRef | StackRef;
@@ -71,6 +71,25 @@ class Compiler {
         return { typ: "GlobalRef", name, index };
     }
 
+    propagateCapture(fromFrame: number, toFrame: number, name: string) {
+        for (let frame = fromFrame + 1; frame <= toFrame; frame++) {
+            const captures = this.captures[frame];
+            const frameLocals = this.locals[frame - 1];
+            const localIndex = frameLocals.get(name);
+            if (localIndex === undefined) {
+                fail(`invalid capture of ${name} from ${fromFrame}`);
+            }
+            captures.push({
+                typ: "StackRef",
+                frameDist: 0,
+                index: localIndex,
+                name,
+            });
+            const thisFrame = this.locals[frame];
+            thisFrame.set(name, thisFrame.size);
+        }
+    }
+
     compile(expr: Expr) {
         switch (expr.typ) {
             case "IntExpr":
@@ -100,15 +119,14 @@ class Compiler {
 
                 // compile the function
                 const lambdaStart = this.bytes.length;
-                this.locals.push(new Map());
-                this.captures.push([]);
+                const locals = new Map();
+                this.locals.push(locals);
+                const captures: StackRef[] = [];
+                this.captures.push(captures);
                 for (let i = 0; i < expr.params.length; i++) {
-                    this.locals[this.locals.length - 1].set(expr.params[i], i);
+                    locals.set(expr.params[i], i);
                 }
-                this.locals[this.locals.length - 1].set(
-                    expr.name || "",
-                    this.locals.length
-                );
+                locals.set(expr.name || "", locals.size);
                 this.compile(expr.body);
                 this.push({ op: Opcode.Return });
 
@@ -116,20 +134,14 @@ class Compiler {
                 writeInt(this.bytes, jmp, this.bytes.length);
 
                 // push the lambda onto the heap
-                for (const { frameDist, index } of this.captures[
-                    this.captures.length - 1
-                ]) {
-                    this.push({
-                        op: Opcode.Get,
-                        frameDist: frameDist - 1,
-                        index,
-                    });
+                for (const { index } of captures) {
+                    this.push({ op: Opcode.Get, index });
                 }
                 this.push({
                     op: Opcode.MakeLambda,
                     pc: lambdaStart,
                     arity: expr.params.length,
-                    captures: this.captures[this.captures.length - 1].length,
+                    captures: captures.length,
                 });
 
                 this.captures.pop();
@@ -160,21 +172,17 @@ class Compiler {
                     case "StackRef":
                         const { frameDist, index } = ref;
                         if (frameDist === 0) {
-                            this.push({
-                                op: Opcode.Get,
-                                frameDist,
-                                index,
-                            });
+                            this.push({ op: Opcode.Get, index });
                         } else {
                             const top = this.locals[this.locals.length - 1];
                             const localIndex = top.size;
-                            top.set(ref.name, localIndex);
-                            this.push({
-                                op: Opcode.Get,
-                                frameDist: 0,
-                                index: localIndex,
-                            });
-                            this.captures[this.captures.length - 1].push(ref);
+                            this.propagateCapture(
+                                this.captures.length - 1 - frameDist,
+                                this.captures.length - 1,
+                                expr.value
+                            );
+                            top.set(expr.value, localIndex);
+                            this.push({ op: Opcode.Get, index: localIndex });
                         }
                         break;
                     default:

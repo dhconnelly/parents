@@ -5,7 +5,7 @@ import {
     printInstr,
     readInstr,
 } from "../instr";
-import { Err, Ok, Option, Result, unwrap } from "../util";
+import { Err, fail, Ok, Option, Result, unwrap } from "../util";
 import { Type } from "../types";
 import {
     print,
@@ -76,7 +76,7 @@ const BUILT_IN_FNS: Map<keyof typeof BUILT_INS, BuiltInFn> = new Map([
         arity: 1,
         impl: (...args: Value[]) => {
             // TODO: use source information to improve this message
-            if (!getBool(args[0])) console.log("assertion failed");
+            if (!getBool(args[0])) throw new ExecutionError("assertion failed");
             return { typ: Type.NilType };
         },
     }],
@@ -154,6 +154,14 @@ class VM {
         return unwrap(this.stack.pop());
     }
 
+    pushStack(value: Value) {
+        if (value === null) {
+            this.log();
+            fail("pushing null value!");
+        }
+        this.stack.push(value);
+    }
+
     popN(n: number): Value[] {
         const values = new Array(n);
         for (let i = 0; i < n; i++) {
@@ -164,9 +172,9 @@ class VM {
 
     log() {
         console.log(`[pc=${this.pc}]
-            [frames=${JSON.stringify(this.frames)}]
-            [stack=${JSON.stringify(this.stack)}]
-            [heap=${JSON.stringify(this.heap)}]
+            frames=${JSON.stringify(this.frames)}
+            stack=${JSON.stringify(this.stack)}
+            heap=${JSON.stringify(this.heap)}
         `);
     }
 
@@ -182,7 +190,7 @@ class VM {
         args.reverse();
         try {
             const result = fn.impl(...args);
-            this.stack.push(result);
+            this.pushStack(result);
         } catch (err) {
             if (err instanceof ExecutionError) {
                 this.error(err.message);
@@ -201,8 +209,8 @@ class VM {
             stackBase: this.stack.length - ref.arity,
             returnAddress,
         });
-        this.stack.push(ref);
-        fn.captures.forEach((cap) => this.stack.push(cap));
+        this.pushStack(ref);
+        fn.captures.forEach((cap) => this.pushStack(cap));
         this.pc = fn.pc;
     }
 
@@ -215,7 +223,7 @@ class VM {
         }
         switch (instr.op) {
             case Opcode.Push: {
-                this.stack.push(instr.value);
+                this.pushStack(instr.value);
                 this.pc += size;
                 break;
             }
@@ -227,10 +235,10 @@ class VM {
             }
 
             case Opcode.Get: {
-                const frameIndex = this.frames.length - 1 - instr.frameDist;
-                const frame = this.frames[frameIndex];
-                const value = this.stack[frame.stackBase + instr.index];
-                this.stack.push(value);
+                const top = this.frames[this.frames.length - 1];
+                const stackBase = top === undefined ? 0 : top.stackBase;
+                const value = this.stack[stackBase + instr.index];
+                this.pushStack(value);
                 this.pc += size;
                 break;
             }
@@ -251,7 +259,7 @@ class VM {
 
             case Opcode.DefGlobal: {
                 this.globals.push(this.popStack());
-                this.stack.push(this.nil);
+                this.pushStack(this.nil);
                 this.pc += size;
                 break;
             }
@@ -260,7 +268,7 @@ class VM {
                 if (instr.index >= this.globals.length) {
                     this.error("invalid global reference");
                 }
-                this.stack.push(this.globals[instr.index]);
+                this.pushStack(this.globals[instr.index]);
                 this.pc += size;
                 break;
             }
@@ -268,7 +276,7 @@ class VM {
             case Opcode.MakeLambda: {
                 const caps = this.popN(instr.captures);
                 caps.reverse();
-                this.stack.push({
+                this.pushStack({
                     typ: Type.FnType,
                     arity: instr.arity,
                     heapIndex: this.heap.length,
@@ -288,7 +296,7 @@ class VM {
                 this.stack.length = frame.stackBase;
                 this.pc = frame.returnAddress;
                 this.frames.pop();
-                this.stack.push(value);
+                this.pushStack(value);
                 break;
             }
 
