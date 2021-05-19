@@ -5,18 +5,18 @@ import {
     printInstr,
     readInstr,
 } from "../instr";
-import { Err, fail, Ok, Option, Result, unwrap } from "../util";
 import { Type } from "../types";
+import { Err, fail, Ok, Result, unwrap } from "../util";
 import {
+    BuiltInFn,
+    BuiltInFnRef,
+    Closure,
+    ClosureRef,
+    getBool,
+    getFn,
+    getInt,
     print,
     Value,
-    Closure,
-    getInt,
-    getBool,
-    BuiltInFnRef,
-    BuiltInFn,
-    getFn,
-    ClosureRef,
 } from "./values";
 
 export class ExecutionError extends Error {
