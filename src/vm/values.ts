@@ -33,6 +33,25 @@ export type ClosureRef = {
 
 export type Value = NilValue | BoolValue | IntValue | BuiltInFnRef | ClosureRef;
 
+function valueSize(value: Value): number {
+    // prettier-ignore
+    switch (value.typ) {
+        case Type.IntType: return 4;
+        case Type.NilType: return 1;
+        case Type.FnType: return 9;
+        case Type.BuiltInFnType: return 5 + value.name.length * 2;
+        case Type.BoolType: return 1;
+    }
+}
+
+function sum(nums: number[]): number {
+    return nums.reduce((acc, cur) => acc + cur, 0);
+}
+
+export function closureSize(closure: Closure): number {
+    return 8 + sum(closure.captures.map(valueSize));
+}
+
 export function getInt(value: Value): number {
     if (value.typ !== Type.IntType) {
         throw new TypeCheckError(Type.IntType, value.typ);

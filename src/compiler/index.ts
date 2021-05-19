@@ -17,6 +17,6 @@ export function compileFile(file: string) {
         writeFileSync(outFile, bytes);
     } catch (error) {
         console.error(`${file}: ${error.message}`);
-        return;
+        process.exit(1);
     }
 }

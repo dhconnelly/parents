@@ -17,6 +17,7 @@ import {
     getInt,
     print,
     Value,
+    closureSize,
 } from "./values";
 
 export class ExecutionError extends Error {
@@ -122,6 +123,7 @@ class VM {
     globals: Value[];
     nil: Value;
     frames: StackFrame[];
+    heapSize: number;
 
     constructor(program: DataView, debug: boolean = false) {
         this.program = program;
@@ -141,6 +143,7 @@ class VM {
         this.nil = { typ: Type.NilType };
         this.heap = [];
         this.frames = [];
+        this.heapSize = 0;
     }
 
     error(message: string): never {
@@ -281,11 +284,13 @@ class VM {
                     arity: instr.arity,
                     heapIndex: this.heap.length,
                 });
-                this.heap.push({
+                const closure = {
                     arity: instr.arity,
                     captures: caps,
                     pc: instr.pc,
-                });
+                };
+                this.heap.push(closure);
+                this.heapSize += closureSize(closure);
                 this.pc += size;
                 break;
             }

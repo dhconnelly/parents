@@ -19,7 +19,7 @@ function compileFile(file) {
     }
     catch (error) {
         console.error(`${file}: ${error.message}`);
-        return;
+        process.exit(1);
     }
 }
 exports.compileFile = compileFile;

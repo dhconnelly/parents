@@ -106,6 +106,7 @@ class VM {
         this.nil = { typ: values_1.Type.NilType };
         this.heap = [];
         this.frames = [];
+        this.heapSize = 0;
     }
     error(message) {
         throw new ExecutionError(`execution error: pc=${this.pc}: ${message}`);
@@ -234,11 +235,13 @@ class VM {
                     arity: instr.arity,
                     heapIndex: this.heap.length,
                 });
-                this.heap.push({
+                const closure = {
                     arity: instr.arity,
                     captures: caps,
                     pc: instr.pc,
-                });
+                };
+                this.heap.push(closure);
+                this.heapSize += values_2.closureSize(closure);
                 this.pc += size;
                 break;
             }
