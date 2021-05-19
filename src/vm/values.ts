@@ -1,9 +1,10 @@
-import { Type, TypeCheckError } from "../types";
 import {
     NilValue,
     BoolValue,
     IntValue,
     print as printSerializable,
+    Type,
+    TypeCheckError,
 } from "../values";
 
 export type BuiltInFn = {

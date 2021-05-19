@@ -3,8 +3,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.execute = exports.ExecutionError = void 0;
 const instr_1 = require("../instr");
 const util_1 = require("../util");
-const types_1 = require("../types");
-const values_1 = require("./values");
+const values_1 = require("../values");
+const values_2 = require("./values");
 class ExecutionError extends Error {
     constructor(message) {
         super(message);
@@ -17,21 +17,21 @@ const BUILT_IN_FNS = new Map([
             name: "+",
             arity: 2,
             impl: (...args) => {
-                return { typ: types_1.Type.IntType, value: values_1.getInt(args[0]) + values_1.getInt(args[1]) };
+                return { typ: values_1.Type.IntType, value: values_2.getInt(args[0]) + values_2.getInt(args[1]) };
             },
         }],
     ["-", {
             name: "-",
             arity: 2,
             impl: (...args) => {
-                return { typ: types_1.Type.IntType, value: values_1.getInt(args[0]) - values_1.getInt(args[1]) };
+                return { typ: values_1.Type.IntType, value: values_2.getInt(args[0]) - values_2.getInt(args[1]) };
             },
         }],
     ["<", {
             name: "<",
             arity: 2,
             impl: (...args) => {
-                return { typ: types_1.Type.BoolType, value: values_1.getInt(args[0]) < values_1.getInt(args[1]) };
+                return { typ: values_1.Type.BoolType, value: values_2.getInt(args[0]) < values_2.getInt(args[1]) };
             },
         }],
     ["=", {
@@ -41,16 +41,16 @@ const BUILT_IN_FNS = new Map([
                 const x = args[0];
                 let value;
                 switch (x.typ) {
-                    case types_1.Type.BoolType:
-                        value = values_1.getBool(args[1]) === x.value;
+                    case values_1.Type.BoolType:
+                        value = values_2.getBool(args[1]) === x.value;
                         break;
-                    case types_1.Type.IntType:
-                        value = values_1.getInt(args[1]) === x.value;
+                    case values_1.Type.IntType:
+                        value = values_2.getInt(args[1]) === x.value;
                         break;
                     default:
                         throw new ExecutionError(`invalid arg for =: ${x.typ}`);
                 }
-                return { typ: types_1.Type.BoolType, value };
+                return { typ: values_1.Type.BoolType, value };
             },
         }],
     ["assert", {
@@ -58,31 +58,31 @@ const BUILT_IN_FNS = new Map([
             arity: 1,
             impl: (...args) => {
                 // TODO: use source information to improve this message
-                if (!values_1.getBool(args[0]))
-                    console.log("assertion failed");
-                return { typ: types_1.Type.NilType };
+                if (!values_2.getBool(args[0]))
+                    throw new ExecutionError("assertion failed");
+                return { typ: values_1.Type.NilType };
             },
         }],
     ["display", {
             name: "display",
             arity: 1,
             impl: (...args) => {
-                console.log(values_1.print(args[0]));
-                return { typ: types_1.Type.NilType };
+                console.log(values_2.print(args[0]));
+                return { typ: values_1.Type.NilType };
             },
         }],
     ["*", {
             name: "*",
             arity: 2,
             impl: (...args) => {
-                return { typ: types_1.Type.IntType, value: values_1.getInt(args[0]) * values_1.getInt(args[1]) };
+                return { typ: values_1.Type.IntType, value: values_2.getInt(args[0]) * values_2.getInt(args[1]) };
             },
         }],
     ["isnil", {
             name: "isnil",
             arity: 1,
             impl: (...args) => {
-                return { typ: types_1.Type.BoolType, value: args[0].typ === types_1.Type.NilType };
+                return { typ: values_1.Type.BoolType, value: args[0].typ === values_1.Type.NilType };
             },
         }],
 ]);
@@ -95,15 +95,15 @@ class VM {
         this.globals = new Array(instr_1.NUM_BUILT_INS);
         for (const [name, fn] of BUILT_IN_FNS) {
             const ref = {
-                typ: types_1.Type.BuiltInFnType,
+                typ: values_1.Type.BuiltInFnType,
                 arity: fn.arity,
                 name: fn.name,
             };
             this.globals[instr_1.BUILT_INS[name]] = ref;
         }
-        this.globals[instr_1.BUILT_INS["nil"]] = { typ: types_1.Type.NilType };
+        this.globals[instr_1.BUILT_INS["nil"]] = { typ: values_1.Type.NilType };
         this.debug = debug;
-        this.nil = { typ: types_1.Type.NilType };
+        this.nil = { typ: values_1.Type.NilType };
         this.heap = [];
         this.frames = [];
     }
@@ -200,7 +200,7 @@ class VM {
                 break;
             }
             case instr_1.Opcode.JmpIf: {
-                if (values_1.getBool(this.popStack())) {
+                if (values_2.getBool(this.popStack())) {
                     this.pc = instr.pc;
                 }
                 else {
@@ -230,7 +230,7 @@ class VM {
                 const caps = this.popN(instr.captures);
                 caps.reverse();
                 this.pushStack({
-                    typ: types_1.Type.FnType,
+                    typ: values_1.Type.FnType,
                     arity: instr.arity,
                     heapIndex: this.heap.length,
                 });
@@ -252,14 +252,14 @@ class VM {
                 break;
             }
             case instr_1.Opcode.Call: {
-                const fn = values_1.getFn(this.popStack());
+                const fn = values_2.getFn(this.popStack());
                 // prettier-ignore
                 switch (fn.typ) {
-                    case types_1.Type.BuiltInFnType:
+                    case values_1.Type.BuiltInFnType:
                         this.callBuiltIn(fn);
                         this.pc += size;
                         break;
-                    case types_1.Type.FnType:
+                    case values_1.Type.FnType:
                         this.call(fn, this.pc + size);
                         break;
                 }
@@ -273,7 +273,7 @@ class VM {
     }
 }
 function execute(bytes) {
-    const vm = new VM(new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength), true);
+    const vm = new VM(new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength));
     try {
         vm.run();
         return util_1.Ok(null);

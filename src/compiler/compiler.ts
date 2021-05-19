@@ -8,9 +8,8 @@ import {
     Prog,
 } from "../ast";
 import { BUILT_INS, Instr, Opcode, writeInstr } from "../instr";
-import { Type } from "../types";
 import { Err, fail, Ok, Result } from "../util";
-import { SerializableValue, serializeNumber } from "../values";
+import { SerializableValue, serializeNumber, Type } from "../values";
 
 type Ref = GlobalRef | StackRef;
 

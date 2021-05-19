@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.evaluate = exports.Evaluator = exports.EvaluationError = void 0;
 const assert_1 = require("assert");
 const builtins_1 = require("./builtins");
-const types_1 = require("../types");
+const values_1 = require("../values");
 const scope_1 = require("./scope");
 const util_1 = require("../util");
 class EvaluationError extends Error {
@@ -28,7 +28,7 @@ class Evaluator {
     constructor() {
         this.global = new scope_1.Scope();
         this.top = this.global;
-        this.nil = { typ: types_1.Type.NilType };
+        this.nil = { typ: values_1.Type.NilType };
     }
     lookup(expr) {
         let value = this.top.lookup(expr.value) || this.global.lookup(expr.value);
@@ -42,7 +42,7 @@ class Evaluator {
     }
     installBuiltInFn(name, fn) {
         this.define(name, {
-            typ: types_1.Type.BuiltInFnType,
+            typ: values_1.Type.BuiltInFnType,
             arity: fn.length,
             name: name,
             impl: (args) => fn.apply(null, args),
@@ -58,22 +58,22 @@ class Evaluator {
     }
     evaluateBool(expr) {
         const value = this.evaluate(expr);
-        if (value.typ !== types_1.Type.BoolType) {
-            throw typeError(types_1.Type.BoolType, value.typ, expr);
+        if (value.typ !== values_1.Type.BoolType) {
+            throw typeError(values_1.Type.BoolType, value.typ, expr);
         }
         return value;
     }
     evaluateInt(expr) {
         const value = this.evaluate(expr);
-        if (value.typ !== types_1.Type.IntType) {
-            throw typeError(types_1.Type.IntType, value.typ, expr);
+        if (value.typ !== values_1.Type.IntType) {
+            throw typeError(values_1.Type.IntType, value.typ, expr);
         }
         return value;
     }
     evaluateFn(expr) {
         const value = this.evaluate(expr);
-        if (value.typ !== types_1.Type.FnType && value.typ !== types_1.Type.BuiltInFnType) {
-            throw typeError([types_1.Type.FnType, types_1.Type.BuiltInFnType], value.typ, expr);
+        if (value.typ !== values_1.Type.FnType && value.typ !== values_1.Type.BuiltInFnType) {
+            throw typeError([values_1.Type.FnType, values_1.Type.BuiltInFnType], value.typ, expr);
         }
         return value;
     }
@@ -119,7 +119,7 @@ class Evaluator {
     }
     evaluateCall(expr) {
         const f = this.evaluateFn(expr.f);
-        if (f.typ === types_1.Type.FnType) {
+        if (f.typ === values_1.Type.FnType) {
             return this.evaluateUserCall(f, expr);
         }
         else {
@@ -128,7 +128,7 @@ class Evaluator {
     }
     makeLambda(expr) {
         return {
-            typ: types_1.Type.FnType,
+            typ: values_1.Type.FnType,
             body: expr.body,
             params: expr.params,
             name: expr.name,
@@ -147,11 +147,11 @@ class Evaluator {
             case "IdentExpr":
                 return this.lookup(expr);
             case "BoolExpr":
-                return { typ: types_1.Type.BoolType, value: expr.value };
+                return { typ: values_1.Type.BoolType, value: expr.value };
             case "IfExpr":
                 return this.evaluateIf(expr);
             case "IntExpr":
-                return { typ: types_1.Type.IntType, value: expr.value };
+                return { typ: values_1.Type.IntType, value: expr.value };
             case "LambdaExpr":
                 return this.makeLambda(expr);
         }

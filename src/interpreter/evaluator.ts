@@ -3,8 +3,7 @@ import { strict as assert } from "assert";
 import { Prog, Expr, IdentExpr, IfExpr, CallExpr, LambdaExpr } from "../ast";
 import { installBuiltIns } from "./builtins";
 import { Value, FnValue, BuiltInFnValue } from "./values";
-import { BoolValue, IntValue, NilValue } from "../values";
-import { Type } from "../types";
+import { BoolValue, IntValue, NilValue, Type } from "../values";
 import { Scope } from "./scope";
 import { Err, Ok, Result } from "../util";
 

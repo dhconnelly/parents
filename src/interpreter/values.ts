@@ -1,12 +1,12 @@
 import { Expr } from "../ast";
 import { Scope } from "./scope";
-import { Type, TypeCheckError } from "../types";
 import {
     NilValue,
     IntValue,
     BoolValue,
     AbstractValue,
     print as printSerializable,
+    Type,
 } from "../values";
 
 export type Value = NilValue | IntValue | BoolValue | FnValue | BuiltInFnValue;

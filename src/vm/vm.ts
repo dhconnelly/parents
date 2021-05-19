@@ -5,8 +5,8 @@ import {
     printInstr,
     readInstr,
 } from "../instr";
-import { Type } from "../types";
 import { Err, fail, Ok, Result, unwrap } from "../util";
+import { Type } from "../values";
 import {
     BuiltInFn,
     BuiltInFnRef,
