@@ -26,6 +26,19 @@ For example, here's fibonacci:
 
 See the examples/ directory for more.
 
+## Status
+
+Essentially complete. All the example programs compile and run correctly. There
+are closures and recursion and cons lists in user space.
+
+Possible future work:
+
+-   more unit tests
+-   string support
+-   add built-ins for list operations
+-   better command-line interface
+-   additional refactoring as I learn more TypeScript
+
 ## Usage
 
 To install dependencies, build, and link on your machine:
