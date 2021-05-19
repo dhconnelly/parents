@@ -4,6 +4,7 @@ exports.execute = exports.ExecutionError = void 0;
 const instr_1 = require("../instr");
 const util_1 = require("../util");
 const values_1 = require("../values");
+const builtins_1 = require("./builtins");
 const values_2 = require("./values");
 class ExecutionError extends Error {
     constructor(message) {
@@ -11,102 +12,25 @@ class ExecutionError extends Error {
     }
 }
 exports.ExecutionError = ExecutionError;
-// prettier-ignore
-const BUILT_IN_FNS = new Map([
-    ["+", {
-            name: "+",
-            arity: 2,
-            impl: (...args) => {
-                return { typ: values_1.Type.IntType, value: values_2.getInt(args[0]) + values_2.getInt(args[1]) };
-            },
-        }],
-    ["-", {
-            name: "-",
-            arity: 2,
-            impl: (...args) => {
-                return { typ: values_1.Type.IntType, value: values_2.getInt(args[0]) - values_2.getInt(args[1]) };
-            },
-        }],
-    ["<", {
-            name: "<",
-            arity: 2,
-            impl: (...args) => {
-                return { typ: values_1.Type.BoolType, value: values_2.getInt(args[0]) < values_2.getInt(args[1]) };
-            },
-        }],
-    ["=", {
-            name: "=",
-            arity: 2,
-            impl: (...args) => {
-                const x = args[0];
-                let value;
-                switch (x.typ) {
-                    case values_1.Type.BoolType:
-                        value = values_2.getBool(args[1]) === x.value;
-                        break;
-                    case values_1.Type.IntType:
-                        value = values_2.getInt(args[1]) === x.value;
-                        break;
-                    default:
-                        throw new ExecutionError(`invalid arg for =: ${x.typ}`);
-                }
-                return { typ: values_1.Type.BoolType, value };
-            },
-        }],
-    ["assert", {
-            name: "assert",
-            arity: 1,
-            impl: (...args) => {
-                // TODO: use source information to improve this message
-                if (!values_2.getBool(args[0]))
-                    throw new ExecutionError("assertion failed");
-                return { typ: values_1.Type.NilType };
-            },
-        }],
-    ["display", {
-            name: "display",
-            arity: 1,
-            impl: (...args) => {
-                console.log(values_2.print(args[0]));
-                return { typ: values_1.Type.NilType };
-            },
-        }],
-    ["*", {
-            name: "*",
-            arity: 2,
-            impl: (...args) => {
-                return { typ: values_1.Type.IntType, value: values_2.getInt(args[0]) * values_2.getInt(args[1]) };
-            },
-        }],
-    ["isnil", {
-            name: "isnil",
-            arity: 1,
-            impl: (...args) => {
-                return { typ: values_1.Type.BoolType, value: args[0].typ === values_1.Type.NilType };
-            },
-        }],
-]);
-const BUILT_INS_LOOKUP = BUILT_IN_FNS;
 class VM {
     constructor(program, debug = false) {
         this.program = program;
         this.pc = 0;
         this.stack = [];
-        this.globals = new Array(instr_1.NUM_BUILT_INS);
-        for (const [name, fn] of BUILT_IN_FNS) {
-            const ref = {
-                typ: values_1.Type.BuiltInFnType,
-                arity: fn.arity,
-                name: fn.name,
-            };
-            this.globals[instr_1.BUILT_INS[name]] = ref;
-        }
-        this.globals[instr_1.BUILT_INS["nil"]] = { typ: values_1.Type.NilType };
         this.debug = debug;
         this.nil = { typ: values_1.Type.NilType };
         this.heap = [];
         this.frames = [];
         this.heapSize = 0;
+        this.globals = new Array(instr_1.NUM_BUILT_INS);
+        this.globals[instr_1.BUILT_INS["nil"]] = { typ: values_1.Type.NilType };
+        for (const [name, fn] of builtins_1.BUILT_IN_FNS) {
+            this.globals[instr_1.BUILT_INS[name]] = {
+                typ: values_1.Type.BuiltInFnType,
+                arity: fn.arity,
+                name: fn.name,
+            };
+        }
     }
     error(message) {
         throw new ExecutionError(`execution error: pc=${this.pc}: ${message}`);
@@ -139,7 +63,7 @@ class VM {
         `);
     }
     callBuiltIn(ref) {
-        const fn = BUILT_INS_LOOKUP.get(ref.name);
+        const fn = builtins_1.BUILT_INS_LOOKUP.get(ref.name);
         if (fn === undefined) {
             this.error(`undefined: ${ref.name}`);
         }

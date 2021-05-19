@@ -20,6 +20,6 @@
             (f)
             (times (- n 1) f))))
 
-(define size 1000)
+(define size 100)
 (define (waste) (assert (= size (len (makelist size)))))
 (times 100 waste)
