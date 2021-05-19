@@ -122,6 +122,20 @@ export const BUILT_IN_FNS: Map<keyof typeof BUILT_INS, BuiltInFn> = new Map([
             },
         },
     ],
+
+    [
+        "memory",
+        {
+            name: "memory",
+            arity: 0,
+            impl: () => {
+                return {
+                    typ: Type.IntType,
+                    value: process.memoryUsage().heapUsed,
+                };
+            },
+        },
+    ],
 ]);
 
 export const BUILT_INS_LOOKUP: Map<string, BuiltInFn> = BUILT_IN_FNS;

@@ -95,13 +95,13 @@ class VM {
         `);
     }
 
-    callBuiltIn(ref: BuiltInFnRef) {
+    callBuiltIn(ref: BuiltInFnRef, numArgs: number) {
         const fn = BUILT_INS_LOOKUP.get(ref.name);
         if (fn === undefined) {
             this.error(`undefined: ${ref.name}`);
         }
-        if (fn.arity !== ref.arity) {
-            this.error(`${fn.name} wants ${fn.arity} args, got ${ref.arity}`);
+        if (fn.arity !== numArgs) {
+            this.error(`${fn.name} wants ${fn.arity} args, got ${numArgs}`);
         }
         const args = this.popN(fn.arity);
         args.reverse();
@@ -117,10 +117,10 @@ class VM {
         }
     }
 
-    call(ref: ClosureRef, returnAddress: number) {
+    call(ref: ClosureRef, numArgs: number, returnAddress: number) {
         const fn: Closure = this.heap[ref.heapIndex];
-        if (fn.arity !== ref.arity) {
-            this.error(`function wants ${fn.arity} args, got ${ref.arity}`);
+        if (fn.arity !== numArgs) {
+            this.error(`function wants ${fn.arity} args, got ${numArgs}`);
         }
         this.frames.push({
             stackBase: this.stack.length - ref.arity,
@@ -224,11 +224,11 @@ class VM {
                 // prettier-ignore
                 switch (fn.typ) {
                     case Type.BuiltInFnType:
-                        this.callBuiltIn(fn);
+                        this.callBuiltIn(fn, instr.arity);
                         this.pc += size;
                         break;
                     case Type.FnType:
-                        this.call(fn, this.pc + size);
+                        this.call(fn, instr.arity, this.pc + size);
                         break;
                 }
             }

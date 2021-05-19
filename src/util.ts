@@ -35,7 +35,8 @@ export class Result<T, E extends Error> {
 
     unwrap(): T {
         if (this.result.typ === "ok") return this.result.value;
-        throw this.result.error;
+        console.error(this.result.error.message);
+        process.exit(1);
     }
 }
 

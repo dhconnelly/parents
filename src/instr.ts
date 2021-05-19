@@ -17,6 +17,7 @@ export const BUILT_INS = {
     "*": 6,
     "isnil": 7,
     "nil": 8,
+    "memory": 9,
 } as const;
 export const NUM_BUILT_INS = Object.keys(BUILT_INS).length;
 

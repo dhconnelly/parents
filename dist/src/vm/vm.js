@@ -62,13 +62,13 @@ class VM {
             heap=${JSON.stringify(this.heap)}
         `);
     }
-    callBuiltIn(ref) {
+    callBuiltIn(ref, numArgs) {
         const fn = builtins_1.BUILT_INS_LOOKUP.get(ref.name);
         if (fn === undefined) {
             this.error(`undefined: ${ref.name}`);
         }
-        if (fn.arity !== ref.arity) {
-            this.error(`${fn.name} wants ${fn.arity} args, got ${ref.arity}`);
+        if (fn.arity !== numArgs) {
+            this.error(`${fn.name} wants ${fn.arity} args, got ${numArgs}`);
         }
         const args = this.popN(fn.arity);
         args.reverse();
@@ -85,10 +85,10 @@ class VM {
             }
         }
     }
-    call(ref, returnAddress) {
+    call(ref, numArgs, returnAddress) {
         const fn = this.heap[ref.heapIndex];
-        if (fn.arity !== ref.arity) {
-            this.error(`function wants ${fn.arity} args, got ${ref.arity}`);
+        if (fn.arity !== numArgs) {
+            this.error(`function wants ${fn.arity} args, got ${numArgs}`);
         }
         this.frames.push({
             stackBase: this.stack.length - ref.arity,
@@ -183,11 +183,11 @@ class VM {
                 // prettier-ignore
                 switch (fn.typ) {
                     case values_1.Type.BuiltInFnType:
-                        this.callBuiltIn(fn);
+                        this.callBuiltIn(fn, instr.arity);
                         this.pc += size;
                         break;
                     case values_1.Type.FnType:
-                        this.call(fn, this.pc + size);
+                        this.call(fn, instr.arity, this.pc + size);
                         break;
                 }
             }

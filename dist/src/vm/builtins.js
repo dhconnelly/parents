@@ -116,5 +116,18 @@ exports.BUILT_IN_FNS = new Map([
             },
         },
     ],
+    [
+        "memory",
+        {
+            name: "memory",
+            arity: 0,
+            impl: () => {
+                return {
+                    typ: values_1.Type.IntType,
+                    value: process.memoryUsage().heapUsed,
+                };
+            },
+        },
+    ],
 ]);
 exports.BUILT_INS_LOOKUP = exports.BUILT_IN_FNS;

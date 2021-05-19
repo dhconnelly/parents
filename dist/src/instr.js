@@ -13,6 +13,7 @@ exports.BUILT_INS = {
     "*": 6,
     "isnil": 7,
     "nil": 8,
+    "memory": 9,
 };
 exports.NUM_BUILT_INS = Object.keys(exports.BUILT_INS).length;
 var Opcode;

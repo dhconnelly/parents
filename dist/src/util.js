@@ -30,7 +30,8 @@ class Result {
     unwrap() {
         if (this.result.typ === "ok")
             return this.result.value;
-        throw this.result.error;
+        console.error(this.result.error.message);
+        process.exit(1);
     }
 }
 exports.Result = Result;
