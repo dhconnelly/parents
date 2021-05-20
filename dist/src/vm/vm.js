@@ -13,15 +13,17 @@ class ExecutionError extends Error {
 }
 exports.ExecutionError = ExecutionError;
 class VM {
-    constructor(program, debug = false) {
+    constructor(program, maxHeap = 100000, debug = false) {
         this.program = program;
         this.pc = 0;
         this.stack = [];
         this.debug = debug;
         this.nil = { typ: values_1.Type.NilType };
-        this.heap = [];
+        this.heap = new Map();
         this.frames = [];
         this.heapSize = 0;
+        this.maxHeap = maxHeap;
+        this.nextHeapIndex = 0;
         this.globals = new Array(instr_1.NUM_BUILT_INS);
         this.globals[instr_1.BUILT_INS["nil"]] = { typ: values_1.Type.NilType };
         for (const [name, fn] of builtins_1.BUILT_IN_FNS) {
@@ -85,8 +87,42 @@ class VM {
             }
         }
     }
+    mark(value, live) {
+        if (value.typ !== values_1.Type.FnType)
+            return;
+        const ptr = value.heapIndex;
+        if (live.has(ptr))
+            return;
+        live.add(ptr);
+        for (const capture of this.heapGet(ptr).captures) {
+            this.mark(capture, live);
+        }
+    }
+    gc() {
+        if (this.heapSize < this.maxHeap)
+            return;
+        const live = new Set();
+        this.stack.forEach((value) => this.mark(value, live));
+        this.globals.forEach((value) => this.mark(value, live));
+        const remove = new Set();
+        for (const ptr of this.heap.keys()) {
+            if (!live.has(ptr))
+                remove.add(ptr);
+        }
+        for (const ptr of remove) {
+            this.heapSize -= values_2.closureSize(this.heapGet(ptr));
+            this.heap.delete(ptr);
+        }
+    }
+    heapGet(i) {
+        const closure = this.heap.get(i);
+        if (closure === undefined) {
+            throw new Error(`bad heap access: ${i}`);
+        }
+        return closure;
+    }
     call(ref, numArgs, returnAddress) {
-        const fn = this.heap[ref.heapIndex];
+        const fn = this.heapGet(ref.heapIndex);
         if (fn.arity !== numArgs) {
             this.error(`function wants ${fn.arity} args, got ${numArgs}`);
         }
@@ -99,6 +135,7 @@ class VM {
         this.pc = fn.pc;
     }
     step() {
+        this.gc();
         const { instr, size } = instr_1.readInstr(this.program, this.pc);
         if (this.debug) {
             this.log();
@@ -154,17 +191,18 @@ class VM {
             case instr_1.Opcode.MakeLambda: {
                 const caps = this.popN(instr.captures);
                 caps.reverse();
+                const ptr = this.nextHeapIndex++;
                 this.pushStack({
                     typ: values_1.Type.FnType,
                     arity: instr.arity,
-                    heapIndex: this.heap.length,
+                    heapIndex: ptr,
                 });
                 const closure = {
                     arity: instr.arity,
                     captures: caps,
                     pc: instr.pc,
                 };
-                this.heap.push(closure);
+                this.heap.set(ptr, closure);
                 this.heapSize += values_2.closureSize(closure);
                 this.pc += size;
                 break;
@@ -187,7 +225,14 @@ class VM {
                         this.pc += size;
                         break;
                     case values_1.Type.FnType:
-                        this.call(fn, instr.arity, this.pc + size);
+                        try {
+                            this.call(fn, instr.arity, this.pc + size);
+                        }
+                        catch (err) {
+                            console.log(fn);
+                            console.log(this.stack[this.stack.length - 1]);
+                            console.log(instr);
+                        }
                         break;
                 }
             }
