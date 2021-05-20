@@ -29,17 +29,14 @@ export class Heap {
         return ptr;
     }
 
-    shouldGC(): boolean {
-        return this.size > this.maxSize;
-    }
-
     gc(roots: Iterable<Value>) {
         if (this.size < this.maxSize) return;
-        const live: Set<number> = new Set();
-        for (const root of roots) {
-            mark(root, this, live);
-        }
-        for (const ptr of setDiff(this.heap.keys(), live)) {
+        const live = markAll(roots, this);
+        this.sweep(setDiff(this.heap.keys(), live));
+    }
+
+    private sweep(deadPtrs: number[]) {
+        for (const ptr of deadPtrs) {
             this.size -= closureSize(this.get(ptr));
             this.heap.delete(ptr);
         }
@@ -52,6 +49,14 @@ function setDiff<T>(xs: Iterable<T>, ys: Set<T>): T[] {
         if (!ys.has(x)) diff.push(x);
     }
     return diff;
+}
+
+function markAll(roots: Iterable<Value>, heap: Heap): Set<number> {
+    const live: Set<number> = new Set();
+    for (const root of roots) {
+        mark(root, heap, live);
+    }
+    return live;
 }
 
 function mark(value: Value, heap: Heap, live: Set<number>) {
