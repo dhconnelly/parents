@@ -14,7 +14,7 @@ function main(args: string[]): void {
     }
     switch (args[0]) {
         case "help":
-            console.log("available commands: help, run, compile, vm");
+            console.log("available commands: help, run, compile, vm, disasm");
             break;
         case "run":
             args.slice(1).forEach(runFile);
