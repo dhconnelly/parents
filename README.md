@@ -29,7 +29,7 @@ See the examples/ directory for more.
 ## Status
 
 Essentially complete. All the example programs compile and run correctly. There
-are closures and recursion and cons lists in user space.
+are closures and recursion and cons lists in user space and garbage collection.
 
 Possible future work:
 
@@ -71,11 +71,17 @@ There's also a tree-walking interpreter, in case you don't want to compile:
 
 ## Implementation Details
 
-There are two implementations: a tree-walking interpreter that relies on the
-JavaScript VM to handle garbage collection (in `src/interpreter`), and a
-bytecode-compiled implementation (in `src/vm` and `src/compiler`) that uses
-a standard mark-and-sweep garbage collection scheme. Both implementations use
-a hand-written recursive-descent parser (in `src/lexer.ts` and `src/parser.ts`).
+There are two implementations:
+
+-   a tree-walking interpreter that relies on the JavaScript VM to handle
+    garbage collection (in `src/interpreter`)
+
+-   a compiler (in `src/compiler`) that targets a stack-based virtual machine
+    (see `src/vm`) which uses a naive mark-and-sweep garbage collection scheme
+    (in `src/vm/heap.ts`).
+
+Both implementations use a hand-written recursive-descent parser (see
+`src/lexer.ts` and `src/parser.ts`).
 
 Both `seq` and `let` are implemented by desugaring to immediately-invoked
 lambda expressions. For simplicity, cons lists are not provided and can be
@@ -84,7 +90,9 @@ example.
 
 ## Virtual Machine
 
-Contains a stack, heap, and globals table.
+Contains a stack, heap, and globals table. For simplicity, garbage collection
+(mark and sweep, with the stack and globals forming the root set) is potentially
+triggered only at instruction step time.
 
 The supported instruction set is as follows:
 
@@ -120,6 +128,23 @@ serialization/deserialization to/from bytecode) and `src/vm.ts` for more
 implementation details. Runtime types and values support is found in
 `src/values.ts` (for types common to both the vm and the interpreter) and
 `src/vm/values.ts`.
+
+## Questions
+
+### Is this a good idea?
+
+No. In particular, since the VM and garbage collector are implemented in
+TypeScript and run on Node.js, the V8 garbage collector can interrupt our own
+garbage collector to collect garbage. Also, since this is essentially
+JavaScript, a stray reference to a heap object can prevent cleanup.
+
+### Why is the code style all over the place?
+
+This is my first TypeScript project. I was playing with the features and
+patterns. Exceptions and monadic error handling are intermingled, and in some
+places types vs. interfaces vs. classes are not used consistently or coherently.
+Sometimes there's more imperative looping, sometimes more forEach/map/etc. Not
+quite sure how to consistently structure discriminated unions. And so on.
 
 ## Who
 

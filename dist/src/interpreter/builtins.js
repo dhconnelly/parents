@@ -6,6 +6,9 @@ const values_1 = require("./values");
 const values_2 = require("../values");
 function installBuiltIns(evaluator) {
     evaluator.define("nil", evaluator.nil);
+    evaluator.installBuiltInFn("memory", () => {
+        return { typ: values_2.Type.IntType, value: process.memoryUsage().heapUsed };
+    });
     evaluator.installBuiltInFn("display", (arg) => {
         console.log(values_1.print(evaluator.evaluate(arg)));
         return evaluator.nil;

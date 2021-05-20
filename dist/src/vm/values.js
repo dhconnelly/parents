@@ -1,7 +1,13 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.print = exports.getFn = exports.getBool = exports.getInt = exports.closureSize = void 0;
+exports.print = exports.getFn = exports.getBool = exports.getInt = exports.closureSize = exports.ExecutionError = void 0;
 const values_1 = require("../values");
+class ExecutionError extends Error {
+    constructor(message) {
+        super(message);
+    }
+}
+exports.ExecutionError = ExecutionError;
 function valueSize(value) {
     // prettier-ignore
     switch (value.typ) {

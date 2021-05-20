@@ -7,6 +7,12 @@ import {
     TypeCheckError,
 } from "../values";
 
+export class ExecutionError extends Error {
+    constructor(message: string) {
+        super(message);
+    }
+}
+
 export type BuiltInFn = {
     name: string;
     arity: number;

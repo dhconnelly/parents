@@ -1,7 +1,13 @@
 import { BUILT_INS } from "../instr";
 import { Type } from "../values";
-import { BuiltInFn, getBool, getInt, print, Value } from "./values";
-import { ExecutionError } from "./vm";
+import {
+    BuiltInFn,
+    getBool,
+    getInt,
+    print,
+    Value,
+    ExecutionError,
+} from "./values";
 
 export const BUILT_IN_FNS: Map<keyof typeof BUILT_INS, BuiltInFn> = new Map([
     [

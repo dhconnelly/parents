@@ -23,4 +23,4 @@
 (define size 3000)
 (define (waste) (assert (= size (len (makelist size)))))
 (define (wait) (seq (display (memory)) (times 100 waste)))
-(times 100 wait)
+(times 10 wait)

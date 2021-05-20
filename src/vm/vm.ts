@@ -1,10 +1,4 @@
-import {
-    BUILT_INS,
-    NUM_BUILT_INS,
-    Opcode,
-    printInstr,
-    readInstr,
-} from "../instr";
+import { BUILT_INS, NUM_BUILT_INS, Opcode, readInstr } from "../instr";
 import { Err, fail, Ok, Result, unwrap } from "../util";
 import { Type } from "../values";
 import { BUILT_INS_LOOKUP, BUILT_IN_FNS } from "./builtins";
@@ -12,18 +6,12 @@ import {
     BuiltInFnRef,
     Closure,
     ClosureRef,
-    closureSize,
     getBool,
     getFn,
     Value,
+    ExecutionError,
 } from "./values";
-import { inspect } from "util";
-
-export class ExecutionError extends Error {
-    constructor(message: string) {
-        super(message);
-    }
-}
+import { Heap } from "./heap";
 
 type StackFrame = {
     stackBase: number;
@@ -31,33 +19,19 @@ type StackFrame = {
 };
 
 class VM {
-    debug: boolean;
     program: DataView;
     pc: number;
     stack: Value[];
     globals: Value[];
-    nil: Value;
     frames: StackFrame[];
-    heap: Map<number, Closure>;
-    heapSize: number;
-    maxHeap: number;
-    nextHeapIndex: number;
+    heap: Heap;
 
-    constructor(
-        program: DataView,
-        maxHeap: number = 100000,
-        debug: boolean = false
-    ) {
+    constructor(program: DataView, maxHeap: number = 100000) {
         this.program = program;
         this.pc = 0;
         this.stack = [];
-        this.debug = debug;
-        this.nil = { typ: Type.NilType };
-        this.heap = new Map();
+        this.heap = new Heap(maxHeap);
         this.frames = [];
-        this.heapSize = 0;
-        this.maxHeap = maxHeap;
-        this.nextHeapIndex = 0;
         this.globals = new Array(NUM_BUILT_INS);
         this.globals[BUILT_INS["nil"]] = { typ: Type.NilType };
         for (const [name, fn] of BUILT_IN_FNS) {
@@ -82,7 +56,6 @@ class VM {
 
     pushStack(value: Value) {
         if (value === null) {
-            this.log();
             fail("pushing null value!");
         }
         this.stack.push(value);
@@ -94,14 +67,6 @@ class VM {
             values[i] = this.popStack();
         }
         return values;
-    }
-
-    log() {
-        console.log(`[pc=${this.pc}]
-            frames=${JSON.stringify(this.frames)}
-            stack=${JSON.stringify(this.stack)}
-            heap=${JSON.stringify(this.heap)}
-        `);
     }
 
     callBuiltIn(ref: BuiltInFnRef, numArgs: number) {
@@ -126,41 +91,8 @@ class VM {
         }
     }
 
-    mark(value: Value, live: Set<number>) {
-        if (value.typ !== Type.FnType) return;
-        const ptr = value.heapIndex;
-        if (live.has(ptr)) return;
-        live.add(ptr);
-        for (const capture of this.heapGet(ptr).captures) {
-            this.mark(capture, live);
-        }
-    }
-
-    gc() {
-        if (this.heapSize < this.maxHeap) return;
-        const live: Set<number> = new Set();
-        this.stack.forEach((value) => this.mark(value, live));
-        this.globals.forEach((value) => this.mark(value, live));
-        const remove: Set<number> = new Set();
-        for (const ptr of this.heap.keys()) {
-            if (!live.has(ptr)) remove.add(ptr);
-        }
-        for (const ptr of remove) {
-            this.heapSize -= closureSize(this.heapGet(ptr));
-            this.heap.delete(ptr);
-        }
-    }
-
-    heapGet(i: number): Closure {
-        const closure = this.heap.get(i);
-        if (closure === undefined) {
-            throw new Error(`bad heap access: ${i}`);
-        }
-        return closure;
-    }
-
     call(ref: ClosureRef, numArgs: number, returnAddress: number) {
-        const fn: Closure = this.heapGet(ref.heapIndex);
+        const fn: Closure = this.heap.get(ref.heapIndex);
         if (fn.arity !== numArgs) {
             this.error(`function wants ${fn.arity} args, got ${numArgs}`);
         }
@@ -173,14 +105,14 @@ class VM {
         this.pc = fn.pc;
     }
 
+    *roots(): Iterable<Value> {
+        for (const value of this.globals) yield value;
+        for (const value of this.stack) yield value;
+    }
+
     step() {
-        this.gc();
+        this.heap.gc(this.roots());
         const { instr, size } = readInstr(this.program, this.pc);
-        if (this.debug) {
-            this.log();
-            console.log(printInstr(instr));
-            console.log();
-        }
         switch (instr.op) {
             case Opcode.Push: {
                 this.pushStack(instr.value);
@@ -219,7 +151,7 @@ class VM {
 
             case Opcode.DefGlobal: {
                 this.globals.push(this.popStack());
-                this.pushStack(this.nil);
+                this.pushStack({ typ: Type.NilType });
                 this.pc += size;
                 break;
             }
@@ -236,19 +168,16 @@ class VM {
             case Opcode.MakeLambda: {
                 const caps = this.popN(instr.captures);
                 caps.reverse();
-                const ptr = this.nextHeapIndex++;
+                const ptr = this.heap.alloc({
+                    arity: instr.arity,
+                    captures: caps,
+                    pc: instr.pc,
+                });
                 this.pushStack({
                     typ: Type.FnType,
                     arity: instr.arity,
                     heapIndex: ptr,
                 });
-                const closure = {
-                    arity: instr.arity,
-                    captures: caps,
-                    pc: instr.pc,
-                };
-                this.heap.set(ptr, closure);
-                this.heapSize += closureSize(closure);
                 this.pc += size;
                 break;
             }
@@ -265,20 +194,13 @@ class VM {
 
             case Opcode.Call: {
                 const fn = getFn(this.popStack());
-                // prettier-ignore
                 switch (fn.typ) {
                     case Type.BuiltInFnType:
                         this.callBuiltIn(fn, instr.arity);
                         this.pc += size;
                         break;
                     case Type.FnType:
-                        try {
                         this.call(fn, instr.arity, this.pc + size);
-                        } catch (err) {
-                            console.log(fn);
-                            console.log(this.stack[this.stack.length-1]);
-                            console.log(instr);
-                        }
                         break;
                 }
             }
