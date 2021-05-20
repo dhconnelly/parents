@@ -3,10 +3,9 @@
     "version": "2.0.0",
     "description": "a bytecode vm and compiler for a minimal lisp",
     "scripts": {
-        "test": "mocha -r ts-node/register test/test_*.ts",
-        "dev": "node --loader ts-node/esm ./src/bin/cli.ts",
-        "build": "rm -rf dist && npx tsc && chmod +x dist/src/bin/cli.js",
-        "clean": "rm -rf dist"
+        "test": "npx mocha -r ts-node/register test/test_*.ts",
+        "build": "npx tsc",
+        "prepare": "npm run build"
     },
     "bin": {
         "parents": "./dist/src/bin/cli.js"
@@ -18,7 +17,10 @@
     "keywords": [
         "lisp",
         "typescript",
-        "interpreter"
+        "interpreter",
+        "compiler",
+        "virtual machine",
+        "scheme"
     ],
     "author": "Daniel Connelly <dhconnelly@gmail.com> (https://dhconnelly.com)",
     "license": "MIT",
