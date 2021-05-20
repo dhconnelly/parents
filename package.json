@@ -1,6 +1,6 @@
 {
     "name": "@dhconnelly/parents",
-    "version": "2.0.0",
+    "version": "2.0.1",
     "description": "a bytecode vm and compiler for a minimal lisp",
     "scripts": {
         "test": "npx mocha -r ts-node/register test/test_*.ts",
