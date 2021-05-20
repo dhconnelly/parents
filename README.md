@@ -41,11 +41,21 @@ Possible future work:
 
 ## Usage
 
-To install dependencies, build, and link on your machine:
+To install globally:
 
+    npm install -g @dhconnelly/parents
+
+For development, you can check out the code, build, run the tests, and link your
+local build:
+
+    git clone git@github.com:dhconnelly/parents.git
+    cd parents
     npm install
-    npm run build
+    npm test
     npm link
+
+Or, to install nothing, you can use `npx @dhconnelly/parents` in place of
+the `parents` command.
 
 To compile some programs:
 
