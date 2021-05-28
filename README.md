@@ -31,12 +31,16 @@ See the examples/ directory for more.
 Essentially complete. All the example programs compile and run correctly. There
 are closures and recursion and cons lists in user space and garbage collection.
 
-Possible future work:
+Future work:
 
 -   more unit tests
 -   string support
--   add built-ins for list operations
+-   first-class cons list support
 -   better command-line interface
+-   better input/output support
+-   implement some advent of code solutions as examples
+-   repl
+-   remote attach
 -   additional refactoring as I learn more TypeScript
 
 ## Usage
