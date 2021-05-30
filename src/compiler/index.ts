@@ -1,8 +1,7 @@
 import { readFileSync, writeFileSync } from "fs";
 
 import { Ok } from "../util";
-import { lex } from "../lexer";
-import { parse } from "../parser";
+import { parse } from "../parser/parser";
 import { compile } from "./compiler";
 
 export function compileFile(file: string) {
@@ -10,7 +9,6 @@ export function compileFile(file: string) {
     console.log(`> compiling ${file} to ${outFile}`);
     try {
         const bytes = Ok(readFileSync(file, "utf8"))
-            .flatMap(lex)
             .flatMap(parse)
             .flatMap(compile)
             .unwrap();

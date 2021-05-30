@@ -3,15 +3,14 @@ import assert from "assert";
 
 import { Instr, Opcode, BUILT_INS, NUM_BUILT_INS } from "../src/instr";
 import { compile as compileAST } from "../src/compiler/compiler";
-import { parse } from "../src/parser";
+import { parse } from "../src/parser/parser";
 import { disasm } from "../src/disasm/disasm";
-import { lex } from "../src/lexer";
+import { lex } from "../src/parser/lexer";
 import { Ok } from "../src/util";
 import { Type } from "../src/values";
 
 function compile(text: string): Instr[] {
     return Ok(text)
-        .flatMap(lex)
         .flatMap(parse)
         .flatMap(compileAST)
         .flatMap((bytes) =>

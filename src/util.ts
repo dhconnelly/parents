@@ -38,6 +38,16 @@ export class Result<T, E extends Error> {
         console.error(this.result.error.message);
         process.exit(1);
     }
+
+    unwrap_error(): Error {
+        if (this.result.typ === "err") return this.result.error;
+        console.error("failed to unwrap error");
+        process.exit(1);
+    }
+
+    ok(): boolean {
+        return this.result.typ === "ok";
+    }
 }
 
 export function Ok<T, E extends Error>(t: T): Result<T, E> {

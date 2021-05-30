@@ -1,4 +1,4 @@
-import { Option, Result, Ok, Err, hasValue } from "./util";
+import { Option, Result, Ok, Err, hasValue } from "../util";
 import { Token, TokenType } from "./token";
 
 export class LexerError extends Error {

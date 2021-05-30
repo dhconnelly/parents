@@ -8,9 +8,10 @@ import {
     IntExpr,
     LambdaExpr,
     Prog,
-} from "./ast";
+} from "../ast";
 import { Token, TokenType } from "./token";
-import { Option, Result, Ok, Err } from "./util";
+import { Option, Result, Ok, Err } from "../util";
+import { lex } from "./lexer";
 
 export class ParserError extends Error {
     constructor(message: string) {
@@ -266,9 +267,13 @@ class Parser {
     }
 }
 
-export function parse(toks: Token[]): Result<Prog, ParserError> {
+export function parse(text: string): Result<Prog, ParserError> {
+    const toks = lex(text);
+    if (!toks.ok()) {
+        return Err(toks.unwrap_error());
+    }
     try {
-        const parser = new Parser(toks);
+        const parser = new Parser(toks.unwrap());
         const exprs = [];
         while (!parser.atEnd()) {
             exprs.push(parser.expr());
