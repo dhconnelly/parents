@@ -1,7 +1,7 @@
 import { describe, it } from "mocha";
 import assert from "assert";
 
-import { BUILT_INS, NUM_BUILT_INS } from "../src/vm/builtins";
+import { BUILT_INS, NUM_BUILT_INS } from "../src/vm/builtin_decls";
 import { Instr, Opcode } from "../src/vm/instr";
 import { compile as compileAST } from "../src/compiler/compiler";
 import { parse } from "../src/parser/parser";
@@ -49,7 +49,7 @@ describe("compiler", function () {
         const expected: Instr[] = [
             { op: Opcode.Push, value: { typ: Type.IntType, value: 11 } },
             { op: Opcode.Push, value: { typ: Type.IntType, value: 11 } },
-            { op: Opcode.GetGlobal, index: BUILT_INS["="] },
+            { op: Opcode.GetGlobal, index: BUILT_INS["="].index },
             { op: Opcode.Call, arity: 2 },
             { op: Opcode.Pop },
         ];
@@ -61,7 +61,7 @@ describe("compiler", function () {
         const expected: Instr[] = [
             { op: Opcode.Push, value: { typ: Type.IntType, value: 9 } },
             { op: Opcode.Push, value: { typ: Type.IntType, value: 4 } },
-            { op: Opcode.GetGlobal, index: BUILT_INS["<"] },
+            { op: Opcode.GetGlobal, index: BUILT_INS["<"].index },
             { op: Opcode.Call, arity: 2 },
             { op: Opcode.Pop },
         ];
@@ -73,7 +73,7 @@ describe("compiler", function () {
         const expected: Instr[] = [
             { op: Opcode.Push, value: { typ: Type.IntType, value: 7 } },
             { op: Opcode.Push, value: { typ: Type.IntType, value: 10 } },
-            { op: Opcode.GetGlobal, index: BUILT_INS["-"] },
+            { op: Opcode.GetGlobal, index: BUILT_INS["-"].index },
             { op: Opcode.Call, arity: 2 },
             { op: Opcode.Pop },
         ];
@@ -85,7 +85,7 @@ describe("compiler", function () {
         const expected: Instr[] = [
             { op: Opcode.Push, value: { typ: Type.IntType, value: 5 } },
             { op: Opcode.Push, value: { typ: Type.IntType, value: 10 } },
-            { op: Opcode.GetGlobal, index: BUILT_INS["+"] },
+            { op: Opcode.GetGlobal, index: BUILT_INS["+"].index },
             { op: Opcode.Call, arity: 2 },
             { op: Opcode.Pop },
         ];
@@ -96,7 +96,7 @@ describe("compiler", function () {
         const instrs = compile("(assert #f)");
         const expected: Instr[] = [
             { op: Opcode.Push, value: { typ: Type.BoolType, value: false } },
-            { op: Opcode.GetGlobal, index: BUILT_INS["assert"] },
+            { op: Opcode.GetGlobal, index: BUILT_INS["assert"].index },
             { op: Opcode.Call, arity: 1 },
             { op: Opcode.Pop },
         ];
@@ -107,7 +107,7 @@ describe("compiler", function () {
         const instrs = compile("(display -42)");
         const expected: Instr[] = [
             { op: Opcode.Push, value: { typ: Type.IntType, value: -42 } },
-            { op: Opcode.GetGlobal, index: BUILT_INS["display"] },
+            { op: Opcode.GetGlobal, index: BUILT_INS["display"].index },
             { op: Opcode.Call, arity: 1 },
             { op: Opcode.Pop },
         ];
@@ -276,7 +276,7 @@ describe("compiler", function () {
             { op: Opcode.Jmp, pc: 31 },
             { op: Opcode.Get, index: 2 },
             { op: Opcode.Get, index: 0 },
-            { op: Opcode.GetGlobal, index: BUILT_INS["+"] },
+            { op: Opcode.GetGlobal, index: BUILT_INS["+"].index },
             { op: Opcode.Call, arity: 2 },
             { op: Opcode.Return },
             { op: Opcode.Get, index: 0 },
@@ -297,7 +297,7 @@ describe("compiler", function () {
             { op: Opcode.Jmp, pc: 43 },
             { op: Opcode.Get, index: 2 },
             { op: Opcode.Get, index: 0 },
-            { op: Opcode.GetGlobal, index: BUILT_INS["+"] },
+            { op: Opcode.GetGlobal, index: BUILT_INS["+"].index },
             { op: Opcode.Call, arity: 2 },
             { op: Opcode.Return },
             { op: Opcode.Get, index: 0 },
@@ -317,7 +317,7 @@ describe("compiler", function () {
             { op: Opcode.Jmp, pc: 27 },
             { op: Opcode.Get, index: 0 },
             { op: Opcode.Push, value: { typ: Type.IntType, value: 1 } },
-            { op: Opcode.GetGlobal, index: BUILT_INS["+"] },
+            { op: Opcode.GetGlobal, index: BUILT_INS["+"].index },
             { op: Opcode.Call, arity: 2 },
             { op: Opcode.Return },
             { op: Opcode.MakeLambda, pc: 5, arity: 1, captures: 0 },
@@ -345,17 +345,17 @@ describe("compiler", function () {
             { op: Opcode.Jmp, pc: 89 },
             { op: Opcode.Get, index: 0 },
             { op: Opcode.Push, value: { typ: Type.IntType, value: 0 } },
-            { op: Opcode.GetGlobal, index: BUILT_INS["="] },
+            { op: Opcode.GetGlobal, index: BUILT_INS["="].index },
             { op: Opcode.Call, arity: 2 },
             { op: Opcode.JmpIf, pc: 82 },
             { op: Opcode.Get, index: 0 },
             { op: Opcode.Get, index: 0 },
             { op: Opcode.Push, value: { typ: Type.IntType, value: 1 } },
-            { op: Opcode.GetGlobal, index: BUILT_INS["-"] },
+            { op: Opcode.GetGlobal, index: BUILT_INS["-"].index },
             { op: Opcode.Call, arity: 2 },
             { op: Opcode.Get, index: 1 },
             { op: Opcode.Call, arity: 1 },
-            { op: Opcode.GetGlobal, index: BUILT_INS["+"] },
+            { op: Opcode.GetGlobal, index: BUILT_INS["+"].index },
             { op: Opcode.Call, arity: 2 },
             { op: Opcode.Jmp, pc: 88 },
             { op: Opcode.Push, value: { typ: Type.IntType, value: 0 } },

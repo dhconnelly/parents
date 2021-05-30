@@ -7,7 +7,7 @@ import {
     LambdaExpr,
     Prog,
 } from "../ast";
-import { BUILT_INS } from "../vm/builtins";
+import { BUILT_INS, BUILT_IN_NAMES } from "../vm/builtin_decls";
 import { Instr, Opcode, writeInstr } from "../vm/instr";
 import { Err, fail, Ok, Result } from "../util";
 import { SerializableValue, serializeNumber } from "../vm/values";
@@ -70,7 +70,10 @@ class Compiler {
     constructor() {
         this.bytes = [];
         this.frames = [];
-        this.globals = new Map(Object.entries(BUILT_INS));
+        this.globals = new Map();
+        for (const name of BUILT_IN_NAMES) {
+            this.globals.set(name, BUILT_INS[name].index);
+        }
     }
 
     pushInstr(instr: Instr) {

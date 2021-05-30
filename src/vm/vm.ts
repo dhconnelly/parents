@@ -1,13 +1,8 @@
 import { Opcode, readInstr } from "./instr";
 import { Err, fail, Ok, Result, unwrap } from "../util";
 import { Type } from "../types";
-import {
-    BUILT_INS,
-    BUILT_IN_FN_IMPLS,
-    BUILT_IN_NAMES,
-    BUILT_IN_VALUES,
-    NUM_BUILT_INS,
-} from "./builtins";
+import { BUILT_INS, BUILT_IN_NAMES, NUM_BUILT_INS } from "./builtin_decls";
+import { BUILT_IN_VALUES, BUILT_IN_FN_IMPLS } from "./builtin_impls";
 import {
     BuiltInFnRef,
     Closure,
@@ -40,7 +35,7 @@ class VM {
         this.frames = [];
         this.globals = new Array(NUM_BUILT_INS);
         for (const name of BUILT_IN_NAMES) {
-            this.globals[BUILT_INS[name]] = BUILT_IN_VALUES[name];
+            this.globals[BUILT_INS[name].index] = BUILT_IN_VALUES[name];
         }
     }
 

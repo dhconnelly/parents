@@ -1,35 +1,8 @@
+import { BuiltInName, BuiltInFnName } from "./builtin_decls";
+import { getBool, getInt, print, Value, ExecutionError } from "./values";
 import { Type } from "../types";
-import {
-    BuiltInFn,
-    getBool,
-    getInt,
-    print,
-    Value,
-    ExecutionError,
-} from "./values";
 
-export const BUILT_IN_FNS = {
-    "+": 0,
-    "-": 1,
-    "<": 2,
-    "=": 3,
-    assert: 4,
-    display: 5,
-    "*": 6,
-    isnil: 7,
-    memory: 9,
-};
-export const BUILT_INS = {
-    ...BUILT_IN_FNS,
-    nil: 8,
-};
-
-export const BUILT_IN_NAMES = Object.keys(
-    BUILT_INS
-) as (keyof typeof BUILT_INS)[];
-export const NUM_BUILT_INS = BUILT_IN_NAMES.length;
-
-export const BUILT_IN_VALUES: Record<keyof typeof BUILT_INS, Value> = {
+export const BUILT_IN_VALUES: Record<BuiltInName, Value> = {
     "+": { typ: Type.BuiltInFnType, arity: 2, name: "+" },
     "*": { typ: Type.BuiltInFnType, arity: 2, name: "*" },
     "-": { typ: Type.BuiltInFnType, arity: 2, name: "-" },
@@ -42,7 +15,13 @@ export const BUILT_IN_VALUES: Record<keyof typeof BUILT_INS, Value> = {
     nil: { typ: Type.NilType },
 };
 
-export const BUILT_IN_FN_IMPLS: Record<keyof typeof BUILT_IN_FNS, BuiltInFn> = {
+export type BuiltInFn = {
+    name: string;
+    arity: number;
+    impl: (...args: Value[]) => Value;
+};
+
+export const BUILT_IN_FN_IMPLS: Record<BuiltInFnName, BuiltInFn> = {
     "+": {
         name: "+",
         arity: 2,

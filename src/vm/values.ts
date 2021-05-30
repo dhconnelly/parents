@@ -1,5 +1,5 @@
 import { Type, TypeCheckError } from "../types";
-import { BUILT_IN_FNS } from "./builtins";
+import { BuiltInFnName } from "./builtin_decls";
 
 export class ExecutionError extends Error {
     constructor(message: string) {
@@ -102,12 +102,6 @@ export function serialize(value: SerializableValue): number[] {
     return nums;
 }
 
-export type BuiltInFn = {
-    name: string;
-    arity: number;
-    impl: (...args: Value[]) => Value;
-};
-
 export type Closure = {
     arity: number;
     captures: Value[];
@@ -116,7 +110,7 @@ export type Closure = {
 
 export type BuiltInFnRef = {
     typ: Type.BuiltInFnType;
-    name: keyof typeof BUILT_IN_FNS;
+    name: BuiltInFnName;
     arity: number;
 };
 
