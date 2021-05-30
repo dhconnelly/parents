@@ -1,6 +1,6 @@
 import { readFileSync } from "fs";
 
-import { Instr, printInstr, SizedInstr } from "../instr";
+import { printInstr, SizedInstr } from "../instr";
 import { disasm } from "./disasm";
 
 export function printDisassembled(path: string) {

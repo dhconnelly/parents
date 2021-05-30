@@ -1,4 +1,4 @@
-import { SizedInstr, readInstr, Instr } from "../instr";
+import { SizedInstr, readInstr } from "../instr";
 
 export function disasm(bytes: DataView): SizedInstr[] {
     const instrs: SizedInstr[] = [];

@@ -1,6 +1,6 @@
 import { Option } from "src/util";
-import { Expr, printExpr } from "../ast";
-import { Value, print } from "./values";
+import { Expr, print as printExpr } from "../ast";
+import { Value, print as printValue } from "./values";
 import { Type } from "../values";
 import { Evaluator } from "./evaluator";
 
@@ -12,7 +12,7 @@ export function installBuiltIns(evaluator: Evaluator) {
     });
 
     evaluator.installBuiltInFn("display", (arg: Expr) => {
-        console.log(print(evaluator.evaluate(arg)));
+        console.log(printValue(evaluator.evaluate(arg)));
         return evaluator.nil;
     });
 

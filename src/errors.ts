@@ -13,7 +13,3 @@ export type RootError =
     | ExecutionError
     | TypeCheckError
     | ValueError;
-
-function liftError(err: RootError): RootError {
-    return err;
-}

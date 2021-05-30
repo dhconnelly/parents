@@ -1,6 +1,5 @@
 import { readFileSync } from "fs";
 
-import { RootError } from "../errors";
 import { execute } from "../vm/vm";
 
 export function executeFile(file: string) {
