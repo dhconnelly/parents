@@ -1,4 +1,3 @@
-import { BUILT_INS } from "./instr";
 import { Type } from "../types";
 import {
     BuiltInFn,
@@ -8,6 +7,21 @@ import {
     Value,
     ExecutionError,
 } from "./values";
+
+// prettier-ignore
+export const BUILT_INS = {
+    "+": 0,
+    "-": 1,
+    "<": 2,
+    "=": 3,
+    "assert": 4,
+    "display": 5,
+    "*": 6,
+    "isnil": 7,
+    "nil": 8,
+    "memory": 9,
+} as const;
+export const NUM_BUILT_INS = Object.keys(BUILT_INS).length;
 
 export const BUILT_IN_FNS: Map<keyof typeof BUILT_INS, BuiltInFn> = new Map([
     [

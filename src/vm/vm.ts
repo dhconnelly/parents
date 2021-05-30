@@ -1,7 +1,12 @@
-import { BUILT_INS, NUM_BUILT_INS, Opcode, readInstr } from "./instr";
+import { Opcode, readInstr } from "./instr";
 import { Err, fail, Ok, Result, unwrap } from "../util";
 import { Type } from "../types";
-import { BUILT_INS_LOOKUP, BUILT_IN_FNS } from "./builtins";
+import {
+    BUILT_INS,
+    BUILT_INS_LOOKUP,
+    BUILT_IN_FNS,
+    NUM_BUILT_INS,
+} from "./builtins";
 import {
     BuiltInFnRef,
     Closure,

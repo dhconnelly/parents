@@ -7,7 +7,8 @@ import {
     LambdaExpr,
     Prog,
 } from "../ast";
-import { BUILT_INS, Instr, Opcode, writeInstr } from "../vm/instr";
+import { BUILT_INS } from "../vm/builtins";
+import { Instr, Opcode, writeInstr } from "../vm/instr";
 import { Err, fail, Ok, Result } from "../util";
 import { SerializableValue, serializeNumber } from "../vm/values";
 import { Type } from "../types";
