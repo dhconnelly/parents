@@ -12,18 +12,18 @@ import {
 export type Value = NilValue | IntValue | BoolValue | FnValue | BuiltInFnValue;
 
 export interface FnValue extends AbstractValue {
-    readonly typ: Type.FnType;
-    readonly scope: Scope;
-    readonly params: string[];
-    readonly body: Expr;
-    readonly name?: string;
+    typ: Type.FnType;
+    scope: Scope;
+    params: string[];
+    body: Expr;
+    name?: string;
 }
 
 export interface BuiltInFnValue extends AbstractValue {
-    readonly typ: Type.BuiltInFnType;
-    readonly name: string;
-    readonly arity: number;
-    readonly impl: (args: Expr[]) => Value;
+    typ: Type.BuiltInFnType;
+    name: string;
+    arity: number;
+    impl: (args: Expr[]) => Value;
 }
 
 export function print(value: Value): string {

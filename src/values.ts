@@ -14,7 +14,6 @@ function printType(typ: Type): string {
         case Type.BuiltInFnType: return "BuiltInFnType";
         case Type.FnType: return "FnType";
         case Type.IntType: return "IntType";
-        default: const __fail: never = typ; throw new Error("never");
     }
 }
 
@@ -25,21 +24,21 @@ export class TypeCheckError extends Error {
 }
 
 export interface AbstractValue {
-    readonly typ: Type;
+    typ: Type;
 }
 
 export interface NilValue extends AbstractValue {
-    readonly typ: Type.NilType;
+    typ: Type.NilType;
 }
 
 export interface IntValue extends AbstractValue {
-    readonly typ: Type.IntType;
-    readonly value: number;
+    typ: Type.IntType;
+    value: number;
 }
 
 export interface BoolValue extends AbstractValue {
-    readonly typ: Type.BoolType;
-    readonly value: boolean;
+    typ: Type.BoolType;
+    value: boolean;
 }
 
 // return the bytes of |num| in big-endian order
