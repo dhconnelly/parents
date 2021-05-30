@@ -1,5 +1,5 @@
-import { BUILT_INS } from "../instr";
-import { Type } from "../values";
+import { BUILT_INS } from "./instr";
+import { Type } from "../types";
 import {
     BuiltInFn,
     getBool,

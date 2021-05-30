@@ -1,17 +1,24 @@
 import { Expr } from "../ast";
 import { Scope } from "./scope";
-import {
-    NilValue,
-    IntValue,
-    BoolValue,
-    AbstractValue,
-    print as printSerializable,
-    Type,
-} from "../values";
+import { Type } from "../types";
 
 export type Value = NilValue | IntValue | BoolValue | FnValue | BuiltInFnValue;
 
-export interface FnValue extends AbstractValue {
+export interface NilValue {
+    typ: Type.NilType;
+}
+
+export interface IntValue {
+    typ: Type.IntType;
+    value: number;
+}
+
+export interface BoolValue {
+    typ: Type.BoolType;
+    value: boolean;
+}
+
+export interface FnValue {
     typ: Type.FnType;
     scope: Scope;
     params: string[];
@@ -19,7 +26,7 @@ export interface FnValue extends AbstractValue {
     name?: string;
 }
 
-export interface BuiltInFnValue extends AbstractValue {
+export interface BuiltInFnValue {
     typ: Type.BuiltInFnType;
     name: string;
     arity: number;
@@ -33,8 +40,10 @@ export function print(value: Value): string {
         case Type.FnType:
             return value.name ? `<fn ${value.name}>` : "<anonymous fn>";
         case Type.BoolType:
+            return value.value.toString();
         case Type.IntType:
+            return value.value.toString(10);
         case Type.NilType:
-            return printSerializable(value);
+            return "nil";
     }
 }

@@ -7,9 +7,10 @@ import {
     LambdaExpr,
     Prog,
 } from "../ast";
-import { BUILT_INS, Instr, Opcode, writeInstr } from "../instr";
+import { BUILT_INS, Instr, Opcode, writeInstr } from "../vm/instr";
 import { Err, fail, Ok, Result } from "../util";
-import { SerializableValue, serializeNumber, Type } from "../values";
+import { SerializableValue, serializeNumber } from "../vm/values";
+import { Type } from "../types";
 
 type Ref = GlobalRef | StackRef;
 

@@ -1,13 +1,13 @@
 import { describe, it } from "mocha";
 import assert from "assert";
 
-import { Instr, Opcode, BUILT_INS, NUM_BUILT_INS } from "../src/instr";
+import { Instr, Opcode, BUILT_INS, NUM_BUILT_INS } from "../src/vm/instr";
 import { compile as compileAST } from "../src/compiler/compiler";
 import { parse } from "../src/parser/parser";
 import { disasm } from "../src/disasm/disasm";
 import { lex } from "../src/parser/lexer";
 import { Ok } from "../src/util";
-import { Type } from "../src/values";
+import { Type } from "../src/types";
 
 function compile(text: string): Instr[] {
     return Ok(text)
