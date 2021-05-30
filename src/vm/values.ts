@@ -1,4 +1,5 @@
 import { Type, TypeCheckError } from "../types";
+import { BUILT_IN_FNS } from "./builtins";
 
 export class ExecutionError extends Error {
     constructor(message: string) {
@@ -115,7 +116,7 @@ export type Closure = {
 
 export type BuiltInFnRef = {
     typ: Type.BuiltInFnType;
-    name: string;
+    name: keyof typeof BUILT_IN_FNS;
     arity: number;
 };
 

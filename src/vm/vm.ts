@@ -3,8 +3,9 @@ import { Err, fail, Ok, Result, unwrap } from "../util";
 import { Type } from "../types";
 import {
     BUILT_INS,
-    BUILT_INS_LOOKUP,
-    BUILT_IN_FNS,
+    BUILT_IN_FN_IMPLS,
+    BUILT_IN_NAMES,
+    BUILT_IN_VALUES,
     NUM_BUILT_INS,
 } from "./builtins";
 import {
@@ -38,13 +39,8 @@ class VM {
         this.heap = new Heap(maxHeap);
         this.frames = [];
         this.globals = new Array(NUM_BUILT_INS);
-        this.globals[BUILT_INS["nil"]] = { typ: Type.NilType };
-        for (const [name, fn] of BUILT_IN_FNS) {
-            this.globals[BUILT_INS[name]] = {
-                typ: Type.BuiltInFnType,
-                arity: fn.arity,
-                name: fn.name,
-            };
+        for (const name of BUILT_IN_NAMES) {
+            this.globals[BUILT_INS[name]] = BUILT_IN_VALUES[name];
         }
     }
 
@@ -75,7 +71,7 @@ class VM {
     }
 
     callBuiltIn(ref: BuiltInFnRef, numArgs: number) {
-        const fn = BUILT_INS_LOOKUP.get(ref.name);
+        const fn = BUILT_IN_FN_IMPLS[ref.name];
         if (fn === undefined) {
             this.error(`undefined: ${ref.name}`);
         }
