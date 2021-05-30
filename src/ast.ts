@@ -1,11 +1,11 @@
 export interface Prog {
-    readonly exprs: Expr[];
+    exprs: Expr[];
 }
 
 interface AbstractExpr {
-    readonly typ: string;
-    readonly line: number;
-    readonly col: number;
+    typ: string;
+    line: number;
+    col: number;
 }
 
 export type Expr =
@@ -18,44 +18,44 @@ export type Expr =
     | CallExpr;
 
 export interface IntExpr extends AbstractExpr {
-    readonly typ: "IntExpr";
-    readonly value: number;
+    typ: "IntExpr";
+    value: number;
 }
 
 export interface BoolExpr extends AbstractExpr {
-    readonly typ: "BoolExpr";
-    readonly value: boolean;
+    typ: "BoolExpr";
+    value: boolean;
 }
 
 export interface IdentExpr extends AbstractExpr {
-    readonly typ: "IdentExpr";
-    readonly value: string;
+    typ: "IdentExpr";
+    value: string;
 }
 
 export interface DefineExpr extends AbstractExpr {
-    readonly typ: "DefineExpr";
-    readonly name: string;
-    readonly binding: Expr;
+    typ: "DefineExpr";
+    name: string;
+    binding: Expr;
 }
 
 export interface IfExpr extends AbstractExpr {
-    readonly typ: "IfExpr";
-    readonly cond: Expr;
-    readonly cons: Expr;
-    readonly alt: Expr;
+    typ: "IfExpr";
+    cond: Expr;
+    cons: Expr;
+    alt: Expr;
 }
 
 export interface LambdaExpr extends AbstractExpr {
-    readonly typ: "LambdaExpr";
-    readonly name?: string;
-    readonly params: string[];
-    readonly body: Expr;
+    typ: "LambdaExpr";
+    name?: string;
+    params: string[];
+    body: Expr;
 }
 
 export interface CallExpr extends AbstractExpr {
-    readonly typ: "CallExpr";
-    readonly f: Expr;
-    readonly args: Expr[];
+    typ: "CallExpr";
+    f: Expr;
+    args: Expr[];
 }
 
 export function printExpr(expr: Expr): string {

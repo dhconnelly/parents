@@ -46,31 +46,25 @@ export type Instr =
     | GetStackInstr
     | MakeLambdaInstr;
 
-type PushInstr = {
-    readonly op: Opcode.Push;
-    readonly value: SerializableValue;
-};
-type PopInstr = { readonly op: Opcode.Pop };
-type JmpIfInstr = { readonly op: Opcode.JmpIf; readonly pc: number };
-type JmpInstr = { readonly op: Opcode.Jmp; readonly pc: number };
-type DefGlobalInstr = { readonly op: Opcode.DefGlobal };
-type GetGlobalInstr = { readonly op: Opcode.GetGlobal; readonly index: number };
-type CallInstr = { readonly op: Opcode.Call; readonly arity: number };
-type ReturnInstr = { readonly op: Opcode.Return };
-type GetStackInstr = {
-    readonly op: Opcode.Get;
-    readonly index: number;
-};
+type PushInstr = { op: Opcode.Push; value: SerializableValue };
+type PopInstr = { op: Opcode.Pop };
+type JmpIfInstr = { op: Opcode.JmpIf; pc: number };
+type JmpInstr = { op: Opcode.Jmp; pc: number };
+type DefGlobalInstr = { op: Opcode.DefGlobal };
+type GetGlobalInstr = { op: Opcode.GetGlobal; index: number };
+type CallInstr = { op: Opcode.Call; arity: number };
+type ReturnInstr = { op: Opcode.Return };
+type GetStackInstr = { op: Opcode.Get; index: number };
 type MakeLambdaInstr = {
-    readonly op: Opcode.MakeLambda;
-    readonly pc: number;
-    readonly arity: number;
-    readonly captures: number;
+    op: Opcode.MakeLambda;
+    pc: number;
+    arity: number;
+    captures: number;
 };
 
 export type SizedInstr = {
-    readonly instr: Instr;
-    readonly size: number;
+    instr: Instr;
+    size: number;
 };
 
 type FixedSizeInstrOpcode =

@@ -5,7 +5,7 @@
     "scripts": {
         "test": "npx mocha -r ts-node/register test/test_*.ts",
         "build": "npx tsc",
-        "prepare": "npm run build"
+        "prepare": "npm run build && chmod +x dist/src/bin/cli.js"
     },
     "bin": {
         "parents": "./dist/src/bin/cli.js"
