@@ -11,14 +11,12 @@ export const BUILT_INS = {
     memory: { index: 9, typ: "function" },
 } as const;
 
-export const NUM_BUILT_INS = Object.keys(BUILT_INS).length;
-
-type BuiltIns = typeof BUILT_INS;
-export type BuiltInName = keyof BuiltIns;
-
-export const BUILT_IN_NAMES = Object.keys(BUILT_INS) as BuiltInName[];
-
-type BuiltInFn = { typ: "function" };
+export type BuiltInName = keyof typeof BUILT_INS;
 export type BuiltInFnName = {
-    [K in BuiltInName]: BuiltIns[K] extends BuiltInFn ? K : never;
+    [K in BuiltInName]: typeof BUILT_INS[K] extends { typ: "function" }
+        ? K
+        : never;
 }[BuiltInName];
+
+export const NUM_BUILT_INS = Object.keys(BUILT_INS).length;
+export const BUILT_IN_NAMES = Object.keys(BUILT_INS) as BuiltInName[];
