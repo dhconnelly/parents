@@ -1,6 +1,6 @@
-import { BuiltInName, BuiltInFnName } from "./builtin_decls";
-import { getBool, getInt, print, Value, ExecutionError } from "./values";
-import { Type } from "../types";
+import { BuiltInName, BuiltInFnName } from "../builtin_decls";
+import { getBool, getInt, print, Value, ExecutionError } from "../values";
+import { Type } from "../../types";
 
 export const BUILT_IN_VALUES: Record<BuiltInName, Value> = {
     "+": { typ: Type.BuiltInFnType, arity: 2, name: "+" },

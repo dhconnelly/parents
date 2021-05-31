@@ -1,7 +1,7 @@
-import { Opcode, readInstr } from "./instr";
-import { Err, fail, Ok, Result, unwrap } from "../util";
-import { Type } from "../types";
-import { BUILT_INS, BUILT_IN_NAMES, NUM_BUILT_INS } from "./builtin_decls";
+import { Opcode, readInstr } from "../instr";
+import { Err, fail, Ok, Result, unwrap } from "../../util";
+import { Type } from "../../types";
+import { BUILT_INS, BUILT_IN_NAMES, NUM_BUILT_INS } from "../builtin_decls";
 import { BUILT_IN_VALUES, BUILT_IN_FN_IMPLS } from "./builtin_impls";
 import {
     BuiltInFnRef,
@@ -11,7 +11,7 @@ import {
     getFn,
     Value,
     ExecutionError,
-} from "./values";
+} from "../values";
 import { Heap } from "./heap";
 
 type StackFrame = {

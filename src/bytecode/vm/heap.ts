@@ -1,5 +1,5 @@
-import { Value, Closure, closureSize, ExecutionError } from "./values";
-import { Type } from "../types";
+import { Value, Closure, closureSize, ExecutionError } from "../values";
+import { Type } from "../../types";
 
 export class Heap {
     heap: Map<number, Closure>;

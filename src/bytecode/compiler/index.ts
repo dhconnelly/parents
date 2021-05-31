@@ -1,7 +1,7 @@
 import { readFileSync, writeFileSync } from "fs";
 
-import { Ok } from "../util";
-import { parse } from "../parser/parser";
+import { Ok } from "../../util";
+import { parse } from "../../parser/parser";
 import { compile } from "./compiler";
 
 export function compileFile(file: string) {

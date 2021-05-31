@@ -3,9 +3,9 @@
 import { argv } from "process";
 
 import { printDisassembled } from "../disasm/index";
-import { compileFile } from "../compiler/index";
+import { compileFile } from "../bytecode/compiler/index";
 import { runFile } from "../interpreter/index";
-import { executeFile } from "../vm/index";
+import { executeFile } from "../bytecode/vm/index";
 
 function main(args: string[]): void {
     if (args.length === 0) {

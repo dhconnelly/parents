@@ -1,9 +1,9 @@
 import { describe, it } from "mocha";
 import assert from "assert";
 
-import { BUILT_INS, NUM_BUILT_INS } from "../src/vm/builtin_decls";
-import { Instr, Opcode } from "../src/vm/instr";
-import { compile as compileAST } from "../src/compiler/compiler";
+import { BUILT_INS, NUM_BUILT_INS } from "../src/bytecode/builtin_decls";
+import { Instr, Opcode } from "../src/bytecode/instr";
+import { compile as compileAST } from "../src/bytecode/compiler/compiler";
 import { parse } from "../src/parser/parser";
 import { disasm } from "../src/disasm/disasm";
 import { Ok } from "../src/util";

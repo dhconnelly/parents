@@ -6,12 +6,12 @@ import {
     IfExpr,
     LambdaExpr,
     Prog,
-} from "../ast";
-import { BUILT_INS, BUILT_IN_NAMES } from "../vm/builtin_decls";
-import { Instr, Opcode, writeInstr } from "../vm/instr";
-import { Err, fail, Ok, Result } from "../util";
-import { SerializableValue, serializeNumber } from "../vm/values";
-import { Type } from "../types";
+} from "../../ast";
+import { BUILT_INS, BUILT_IN_NAMES } from "../builtin_decls";
+import { Instr, Opcode, writeInstr } from "../instr";
+import { Err, fail, Ok, Result } from "../../util";
+import { SerializableValue, serializeNumber } from "../values";
+import { Type } from "../../types";
 
 type Ref = GlobalRef | StackRef;
 
