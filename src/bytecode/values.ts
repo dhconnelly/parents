@@ -60,29 +60,25 @@ export function closureSize(closure: Closure): number {
     return 8 + sum(closure.captures.map(valueSize));
 }
 
+export function getInt(value: Value): number {
+    if (value.typ !== Type.IntType) {
+        throw new TypeCheckError(Type.IntType, value.typ);
+    }
+    return value.value;
+}
+
+export function getBool(value: Value): boolean {
+    if (value.typ !== Type.BoolType) {
+        throw new TypeCheckError(Type.BoolType, value.typ);
+    }
+    return value.value;
+}
+
 export function getFn(value: Value): BuiltInFnRef | ClosureRef {
     if (value.typ !== Type.BuiltInFnType && value.typ !== Type.FnType) {
         throw new TypeCheckError(Type.FnType, value.typ);
     }
     return value;
-}
-
-export function getAs<T extends Type>(
-    value: Value,
-    typ: T
-): T extends Type.BoolType
-    ? BoolValue
-    : T extends Type.IntType
-    ? IntValue
-    : T extends Type.NilType
-    ? NilValue
-    : T extends Type.FnType
-    ? ClosureRef
-    : T extends Type.BuiltInFnType
-    ? BuiltInFnRef
-    : never {
-    if (typ !== value.typ) throw new TypeCheckError(typ, value.typ);
-    return value as any;
 }
 
 export function print(value: Value): string {

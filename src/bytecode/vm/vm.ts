@@ -7,7 +7,7 @@ import {
     BuiltInFnRef,
     Closure,
     ClosureRef,
-    getAs,
+    getBool,
     getFn,
     Value,
 } from "../values";
@@ -132,7 +132,7 @@ class VM {
             }
 
             case Opcode.JmpIf: {
-                if (getAs(this.popStack(), Type.BoolType).value) {
+                if (getBool(this.popStack())) {
                     this.pc = instr.pc;
                 } else {
                     this.pc += size;

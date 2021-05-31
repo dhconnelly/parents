@@ -1,5 +1,5 @@
 import { BuiltInName, BuiltInFnName } from "../builtin_decls";
-import { print, Value, getAs } from "../values";
+import { getBool, getInt, print, Value } from "../values";
 import { ExecutionError } from "../errors";
 import { Type } from "../../types";
 
@@ -27,9 +27,10 @@ export const BUILT_IN_FN_IMPLS: Record<BuiltInFnName, BuiltInFn> = {
         name: "+",
         arity: 2,
         impl: (...args: Value[]) => {
-            const left = getAs(args[0], Type.IntType).value;
-            const right = getAs(args[1], Type.IntType).value;
-            return { typ: Type.IntType, value: left + right };
+            return {
+                typ: Type.IntType,
+                value: getInt(args[0]) + getInt(args[1]),
+            };
         },
     },
 
@@ -37,9 +38,10 @@ export const BUILT_IN_FN_IMPLS: Record<BuiltInFnName, BuiltInFn> = {
         name: "-",
         arity: 2,
         impl: (...args: Value[]) => {
-            const left = getAs(args[0], Type.IntType).value;
-            const right = getAs(args[1], Type.IntType).value;
-            return { typ: Type.IntType, value: left - right };
+            return {
+                typ: Type.IntType,
+                value: getInt(args[0]) - getInt(args[1]),
+            };
         },
     },
 
@@ -47,9 +49,10 @@ export const BUILT_IN_FN_IMPLS: Record<BuiltInFnName, BuiltInFn> = {
         name: "<",
         arity: 2,
         impl: (...args: Value[]) => {
-            const left = getAs(args[0], Type.IntType).value;
-            const right = getAs(args[1], Type.IntType).value;
-            return { typ: Type.BoolType, value: left < right };
+            return {
+                typ: Type.BoolType,
+                value: getInt(args[0]) < getInt(args[1]),
+            };
         },
     },
 
@@ -61,10 +64,10 @@ export const BUILT_IN_FN_IMPLS: Record<BuiltInFnName, BuiltInFn> = {
             let value;
             switch (x.typ) {
                 case Type.BoolType:
-                    value = getAs(args[1], Type.BoolType).value === x.value;
+                    value = getBool(args[1]) === x.value;
                     break;
                 case Type.IntType:
-                    value = getAs(args[1], Type.IntType).value === x.value;
+                    value = getInt(args[1]) === x.value;
                     break;
                 default:
                     throw new ExecutionError(`invalid arg for =: ${x.typ}`);
@@ -78,8 +81,7 @@ export const BUILT_IN_FN_IMPLS: Record<BuiltInFnName, BuiltInFn> = {
         arity: 1,
         impl: (...args: Value[]) => {
             // TODO: use source information to improve this message
-            if (!getAs(args[0], Type.BoolType).value)
-                throw new ExecutionError("assertion failed");
+            if (!getBool(args[0])) throw new ExecutionError("assertion failed");
             return { typ: Type.NilType };
         },
     },
@@ -97,9 +99,10 @@ export const BUILT_IN_FN_IMPLS: Record<BuiltInFnName, BuiltInFn> = {
         name: "*",
         arity: 2,
         impl: (...args: Value[]) => {
-            const left = getAs(args[0], Type.IntType).value;
-            const right = getAs(args[1], Type.IntType).value;
-            return { typ: Type.IntType, value: left * right };
+            return {
+                typ: Type.IntType,
+                value: getInt(args[0]) * getInt(args[1]),
+            };
         },
     },
 
