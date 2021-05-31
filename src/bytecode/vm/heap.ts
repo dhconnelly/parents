@@ -1,4 +1,5 @@
-import { Value, Closure, closureSize, ExecutionError } from "../values";
+import { Value, Closure, closureSize } from "../values";
+import { ExecutionError } from "../errors";
 import { Type } from "../../types";
 
 export class Heap {

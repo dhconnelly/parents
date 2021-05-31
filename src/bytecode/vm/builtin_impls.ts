@@ -1,5 +1,6 @@
 import { BuiltInName, BuiltInFnName } from "../builtin_decls";
-import { getBool, getInt, print, Value, ExecutionError } from "../values";
+import { getBool, getInt, print, Value } from "../values";
+import { ExecutionError } from "../errors";
 import { Type } from "../../types";
 
 export const BUILT_IN_VALUES: Record<BuiltInName, Value> = {

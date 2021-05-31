@@ -1,11 +1,61 @@
 #!/usr/bin/env node
 
+import { readFileSync } from "fs";
+import { writeFileSync } from "fs";
 import { argv } from "process";
 
-import { printDisassembled } from "../disasm/index";
-import { compileFile } from "../bytecode/compiler/index";
-import { runFile } from "../interpreter/index";
-import { executeFile } from "../bytecode/vm/index";
+import { compile } from "../bytecode/compiler/compiler";
+import { execute } from "../bytecode/vm/vm";
+import { parse } from "../parser/parser";
+import { Ok } from "../util";
+import { printInstr } from "../bytecode/instr";
+import { disasm } from "../disasm/disasm";
+import { evaluate } from "../interpreter/evaluator";
+
+export function executeFile(file: string) {
+    console.log(`> executing bytecode from ${file}`);
+    const bytes = readFileSync(file);
+    execute(bytes).unwrap();
+}
+
+export function compileFile(file: string) {
+    const outFile = file + ".bytecode";
+    console.log(`> compiling ${file} to ${outFile}`);
+    try {
+        const bytes = Ok(readFileSync(file, "utf8"))
+            .flatMap(parse)
+            .flatMap(compile)
+            .unwrap();
+        writeFileSync(outFile, bytes);
+    } catch (error) {
+        console.error(`${file}: ${error.message}`);
+        process.exit(1);
+    }
+}
+
+export function printDisassembled(path: string) {
+    const bytes = readFileSync(path);
+    const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+    const instrs = disasm(view);
+    let i = 0;
+    for (const instr of instrs) {
+        console.log(`[${i}]\t`, printInstr(instr.instr));
+        i += instr.size;
+    }
+}
+
+export function runFile(file: string) {
+    console.log(`> running ${file}`);
+    try {
+        Ok(readFileSync(file, "utf8"))
+            .flatMap(parse)
+            .flatMap(evaluate)
+            .unwrap();
+    } catch (error) {
+        console.error(`${file}: ${error.message}`);
+        return;
+    }
+}
 
 function main(args: string[]): void {
     if (args.length === 0) {

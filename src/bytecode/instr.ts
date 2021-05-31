@@ -1,10 +1,10 @@
+import { print } from "./values";
 import {
     SerializableValue,
     deserialize,
     serialize,
     serializeNumber,
-    print,
-} from "./values";
+} from "./serialize";
 
 export enum Opcode {
     Push = 1,

@@ -10,7 +10,7 @@ import {
 import { BUILT_INS, BUILT_IN_NAMES } from "../builtin_decls";
 import { Instr, Opcode, writeInstr } from "../instr";
 import { Err, fail, Ok, Result } from "../../util";
-import { SerializableValue, serializeNumber } from "../values";
+import { SerializableValue, serializeNumber } from "../serialize";
 import { Type } from "../../types";
 
 type Ref = GlobalRef | StackRef;

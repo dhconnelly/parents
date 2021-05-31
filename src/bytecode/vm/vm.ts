@@ -10,8 +10,8 @@ import {
     getBool,
     getFn,
     Value,
-    ExecutionError,
 } from "../values";
+import { ExecutionError } from "../errors";
 import { Heap } from "./heap";
 
 type StackFrame = {
