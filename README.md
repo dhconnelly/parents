@@ -90,9 +90,9 @@ There are two implementations:
 -   a tree-walking interpreter that relies on the JavaScript VM to handle
     garbage collection (in `src/interpreter`)
 
--   a compiler (in `src/compiler`) that targets a stack-based virtual machine
-    (see `src/vm`) which uses a naive mark-and-sweep garbage collection scheme
-    (in `src/vm/heap.ts`).
+-   a compiler (in `src/bytecode/compiler`) that targets a stack-based virtual machine
+    (see `src/bytecode/vm`) which uses a naive mark-and-sweep garbage collection scheme
+    (in `src/bytecode/vm/heap.ts`).
 
 Both implementations use a hand-written recursive-descent parser (see
 `src/lexer.ts` and `src/parser.ts`).
